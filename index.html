@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Nano Resto Bar · Mesa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0c; --bg-elevated:#121216; --surface:rgba(255,255,255,0.04); --surface-hover:rgba(255,255,255,0.08);
+    --glass:rgba(255,255,255,0.05); --glass-border:rgba(255,255,255,0.07); --glass-border-hover:rgba(255,255,255,0.14);
+    --accent:#e88c3c; --accent-light:#f5b56a; --accent-glow:rgba(232,140,60,0.25);
+    --ember:#e85a3c; --text:#f2f0ec; --text-secondary:#9a9590; --text-muted:#5c5a56;
+    --success:#4ade80; --radius-sm:12px; --radius-md:16px; --radius-lg:22px; --radius-xl:28px;
+    --shadow-sm:0 2px 8px rgba(0,0,0,0.3); --shadow-md:0 8px 32px rgba(0,0,0,0.4);
+    --display:'Space Grotesk',sans-serif; --body:'Inter',-apple-system,sans-serif;
+    --transition:all 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  html,body{margin:0;background:var(--bg);font-family:var(--body);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:430px;margin:0 auto;position:relative;min-height:100vh}
+  #app{min-height:100vh;position:relative;overflow:hidden;
+    background:radial-gradient(600px 400px at 50% -5%,rgba(232,140,60,0.08),transparent 60%),
+      radial-gradient(400px 300px at 100% 10%,rgba(232,90,60,0.06),transparent 55%),
+      linear-gradient(180deg,var(--bg) 0%,var(--bg-elevated) 100%)}
+  #app::before{content:'';position:fixed;width:280px;height:280px;border-radius:50%;
+    background:radial-gradient(circle,rgba(232,140,60,0.10),transparent 70%);top:-80px;left:50%;transform:translateX(-50%);filter:blur(50px);pointer-events:none}
+  .screen{padding:0 0 110px;display:none;position:relative;z-index:1}
+  .screen.active{display:block;animation:fadeIn 0.4s cubic-bezier(0.4,0,0.2,1)}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+  @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+  @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+  /* Landing */
+  .landing{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 30px;position:relative}
+  .landing-glow{position:absolute;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(232,140,60,0.14),transparent 70%);top:50%;left:50%;transform:translate(-50%,-60%);filter:blur(60px);pointer-events:none}
+  .logo-container{position:relative;width:120px;height:120px;margin-bottom:26px;display:flex;align-items:center;justify-content:center}
+  .logo-ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(232,140,60,0.35);animation:spin 24s linear infinite}
+  .logo-ring::before{content:'';position:absolute;inset:7px;border-radius:50%;border:1px solid rgba(232,140,60,0.18)}
+  .logo-ring::after{content:'';position:absolute;inset:14px;border-radius:50%;border:1px dashed rgba(232,140,60,0.12);animation:spin 32s linear infinite reverse}
+  .logo-flame{position:relative;z-index:2;width:50px;height:50px;filter:drop-shadow(0 0 18px rgba(232,140,60,0.35))}
+  .wordmark{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:-0.02em;color:var(--text)}
+  .wordmark span{color:var(--accent);font-weight:700}
+  .wordmark-sub{font-family:var(--body);font-weight:500;font-size:10.5px;letter-spacing:0.38em;color:var(--accent);text-transform:uppercase;margin-top:5px;opacity:0.75}
+  .mesa-badge{margin-top:26px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:10px 22px;font-size:12.5px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:8px;box-shadow:var(--shadow-sm)}
+  .mesa-badge b{color:var(--accent-light);font-weight:600}
+  .mesa-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);animation:pulse 2.2s ease infinite}
+  .cta-primary{margin-top:34px;background:linear-gradient(135deg,var(--accent-light),var(--accent),var(--ember));background-size:200% 200%;animation:shimmer 3s ease infinite;color:#1a0f00;border:none;font-family:var(--display);font-weight:700;font-size:15px;padding:16px 38px;border-radius:var(--radius-xl);letter-spacing:0.01em;cursor:pointer;box-shadow:0 8px 32px rgba(232,140,60,0.32),0 0 50px rgba(232,140,60,0.08);transition:var(--transition);position:relative;overflow:hidden}
+  .cta-primary::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,0.2),transparent);transform:translateX(-100%);transition:0.6s}
+  .cta-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(232,140,60,0.42)}
+  .cta-primary:hover::before{transform:translateX(100%)}
+  .cta-primary:active{transform:translateY(0) scale(0.97)}
+  .landing-note{margin-top:18px;font-size:12px;color:var(--text-secondary);max-width:260px;line-height:1.6}
+
+  /* Top bar */
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(10,10,12,0.82);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--glass-border);padding:12px 18px;display:flex;align-items:center;gap:12px}
+  .topbar-back{width:36px;height:36px;border-radius:50%;background:var(--surface);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary);transition:var(--transition);flex-shrink:0}
+  .topbar-back:hover{background:var(--surface-hover);color:var(--text)}
+  .search-box{flex:1;position:relative}
+  .search-box input{width:100%;background:var(--surface);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:10px 14px 10px 38px;color:var(--text);font-size:13.5px;font-family:var(--body);outline:none;transition:var(--transition)}
+  .search-box input:focus{border-color:rgba(232,140,60,0.4);box-shadow:0 0 0 3px rgba(232,140,60,0.08)}
+  .search-box input::placeholder{color:var(--text-muted)}
+  .search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-muted);pointer-events:none}
+  .cart-btn{position:relative;width:40px;height:40px;border-radius:50%;background:var(--surface);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary);transition:var(--transition);flex-shrink:0}
+  .cart-btn:hover{background:var(--surface-hover);color:var(--text)}
+  .cart-btn svg{width:18px;height:18px}
+  .cart-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:50%;background:var(--accent);color:#1a0f00;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+  /* ===== BIG CATEGORY CAROUSEL (scroll on big images) ===== */
+  .cat-carousel-wrap{position:relative;padding:24px 0 6px;overflow:hidden}
+  .cat-carousel{
+    display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+    padding:0 calc(50% - 105px) 10px;-webkit-overflow-scrolling:touch;
+  }
+  .cat-carousel::-webkit-scrollbar{display:none}
+  .cat-carousel-item{
+    flex:0 0 auto;scroll-snap-align:center;text-align:center;cursor:pointer;
+    transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);opacity:0.5;
+  }
+  .cat-carousel-item.active{opacity:1;transform:scale(1.05)}
+  .cat-carousel-item:not(.active){transform:scale(0.88)}
+  .cat-carousel-img{
+    width:210px;height:210px;border-radius:50%;position:relative;overflow:hidden;
+    border:3px solid rgba(232,140,60,0.25);box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 40px rgba(232,140,60,0.15);
+    transition:var(--transition);
+  }
+  .cat-carousel-item.active .cat-carousel-img{
+    border-color:rgba(232,140,60,0.55);box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 50px rgba(232,140,60,0.25);
+  }
+  .cat-carousel-img img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s cubic-bezier(0.4,0,0.2,1)}
+  .cat-carousel-img::after{content:'';position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 30px rgba(0,0,0,0.4)}
+  .cat-carousel-name{font-family:var(--display);font-weight:700;font-size:18px;margin-top:14px;letter-spacing:-0.01em;opacity:0;transition:opacity 0.3s}
+  .cat-carousel-item.active .cat-carousel-name{opacity:1}
+  .cat-carousel-desc{font-size:11.5px;color:var(--text-secondary);margin-top:2px;opacity:0;transition:opacity 0.3s}
+  .cat-carousel-item.active .cat-carousel-desc{opacity:1}
+
+  /* U indicator under active */
+  .cat-carousel-indicator{height:3px;border-radius:3px;background:var(--accent);width:24px;margin:8px auto 0;opacity:0;transition:opacity 0.3s}
+  .cat-carousel-item.active .cat-carousel-indicator{opacity:0.7}
+
+  /* Divider */
+  .section-divider{height:1px;background:linear-gradient(90deg,transparent,var(--glass-border),transparent);margin:6px 18px 14px}
+
+  /* Product List - TEXT ONLY */
+  .products-header{display:flex;align-items:center;justify-content:space-between;padding:0 18px 12px}
+  .products-header h3{font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:-0.01em}
+  .products-header .count{font-size:12px;color:var(--text-muted);font-weight:500}
+  .products-list{padding:0 18px;display:flex;flex-direction:column;gap:10px}
+
+  .product-card{
+    border-radius:var(--radius-lg);position:relative;
+    background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    transition:var(--transition);padding:14px 16px;
+    animation:slideUp 0.35s ease backwards;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  }
+  .product-card:nth-child(1){animation-delay:0.04s}
+  .product-card:nth-child(2){animation-delay:0.08s}
+  .product-card:nth-child(3){animation-delay:0.12s}
+  .product-card:hover{border-color:var(--glass-border-hover);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+  .product-info{flex:1;min-width:0}
+  .product-info strong{display:block;font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:3px}
+  .product-info .desc{font-size:12px;color:var(--text-secondary);line-height:1.45;margin-bottom:8px}
+  .product-info .price{font-family:var(--display);font-weight:700;font-size:17px;color:var(--accent-light)}
+  .product-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;padding-top:2px}
+
+  .btn-add-sm{
+    width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;
+    background:linear-gradient(135deg,var(--accent-light),var(--accent));color:#1a0f00;font-size:18px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(232,140,60,0.3);transition:var(--transition);
+  }
+  .btn-add-sm:hover{transform:scale(1.1);box-shadow:0 5px 18px rgba(232,140,60,0.45)}
+  .btn-add-sm:active{transform:scale(0.92)}
+  .stepper-sm{
+    display:flex;align-items:center;gap:4px;background:var(--bg-elevated);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:4px;
+  }
+  .stepper-sm button{
+    width:26px;height:26px;border-radius:50%;border:none;cursor:pointer;background:var(--surface);color:var(--text);font-size:12px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;transition:var(--transition);
+  }
+  .stepper-sm button:hover{background:var(--surface-hover)}
+  .stepper-sm button:active{transform:scale(0.9)}
+  .stepper-sm .qty{font-family:var(--display);font-weight:700;font-size:12.5px;min-width:18px;text-align:center}
+
+  .note-link-sm{background:none;border:none;color:var(--text-muted);font-size:10.5px;text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;gap:3px;transition:color 0.2s;margin-top:4px}
+  .note-link-sm:hover{color:var(--accent)}
+  .note-chip-sm{display:inline-flex;align-items:center;gap:3px;margin-top:4px;font-size:10px;color:var(--accent-light);background:rgba(232,140,60,0.1);border:1px solid rgba(232,140,60,0.22);padding:2px 7px;border-radius:var(--radius-sm)}
+  .note-input-sm{width:100%;margin-top:4px;background:rgba(0,0,0,0.3);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:7px 10px;color:var(--text);font-size:11.5px;font-family:var(--body);outline:none}
+  .note-input-sm:focus{border-color:var(--accent)}
+
+  /* Bottom Bar */
+  .bottombar{
+    position:fixed;left:0;right:0;bottom:0;max-width:430px;margin:0 auto;
+    background:rgba(18,18,22,0.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    border-top:1px solid var(--glass-border);padding:12px 18px;
+    display:flex;align-items:center;justify-content:space-between;z-index:50;
+    box-shadow:0 -8px 32px rgba(0,0,0,0.3);
+  }
+  .bottombar .total{font-size:11.5px;color:var(--text-secondary)}
+  .bottombar .total b{font-family:var(--display);font-size:18px;color:var(--text);display:block;letter-spacing:-0.02em}
+  .cta{
+    background:linear-gradient(135deg,var(--accent-light),var(--accent));color:#1a0f00;border:none;
+    padding:12px 22px;border-radius:var(--radius-md);font-family:var(--display);font-size:13.5px;font-weight:700;cursor:pointer;
+    box-shadow:0 4px 18px rgba(232,140,60,0.32);transition:var(--transition);position:relative;overflow:hidden;
+  }
+  .cta::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,0.25),transparent);transform:translateX(-100%);transition:0.5s}
+  .cta:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(232,140,60,0.42)}
+  .cta:hover::before{transform:translateX(100%)}
+  .cta:active{transform:scale(0.96)}
+  .cta.ghost{background:transparent;color:var(--text);border:1px solid var(--glass-border);box-shadow:none}
+  .cta.ghost:hover{background:var(--surface)}
+
+  /* Cart Screen */
+  .backrow{display:flex;justify-content:space-between;align-items:center;padding:18px 18px 8px}
+  .backrow button{background:none;border:none;font-size:13px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:6px;transition:color 0.2s;font-family:var(--body)}
+  .backrow button:hover{color:var(--accent)}
+  h1.h2{font-family:var(--display);font-weight:700;font-size:22px;margin:0 18px 18px;letter-spacing:-0.02em}
+  .ticket-box{background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:var(--radius-lg);padding:22px;font-size:13px;margin:0 18px;box-shadow:var(--shadow-sm)}
+  .ticket-box .row{display:flex;justify-content:space-between;padding:6px 0;gap:10px;align-items:flex-start}
+  .ticket-box .row .note{display:block;font-size:10.5px;color:var(--accent-light);margin-top:1px;opacity:0.8}
+  .ticket-box hr{border:none;border-top:1px dashed var(--glass-border);margin:10px 0}
+  .ticket-box .tot{font-weight:700;font-size:15px;font-family:var(--display);color:var(--accent-light)}
+  .status-line{margin-top:14px;font-size:11.5px;color:var(--text-secondary);line-height:1.55;border-top:1px dashed var(--glass-border);padding-top:12px}
+  .empty-cart{color:var(--text-secondary);text-align:center;padding:40px 18px;font-size:13px}
+  .cart-line{display:flex;gap:12px;align-items:flex-start;padding:12px 18px;border-bottom:1px solid var(--glass-border);animation:slideUp 0.3s ease backwards}
+  .cart-line:nth-child(1){animation-delay:0.04s}
+  .cart-line:nth-child(2){animation-delay:0.08s}
+  .cart-line:nth-child(3){animation-delay:0.12s}
+  .cart-line .ic{width:36px;height:36px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--glass-border)}
+  .cart-line .ic svg{width:18px;height:18px;color:var(--accent-light)}
+  .cart-line .info{flex:1}
+  .cart-line strong{font-size:13px;display:block;font-weight:600;margin-bottom:1px}
+  .cart-line .desc{font-size:11px;color:var(--text-secondary)}
+  .cart-line .price{font-size:14px;font-family:var(--display);font-weight:700;color:var(--accent-light);white-space:nowrap}
+
+  /* Confirm */
+  .confirm-icon{width:60px;height:60px;margin:18px auto 14px;background:linear-gradient(135deg,rgba(74,222,128,0.15),rgba(74,222,128,0.05));border:1px solid rgba(74,222,128,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 26px rgba(74,222,128,0.12)}
+  .confirm-icon svg{width:26px;height:26px;color:var(--success)}
+
+  /* Half card */
+  .half-card{border-radius:var(--radius-lg);padding:18px 16px;margin:0 18px 18px;background:linear-gradient(160deg,rgba(232,90,60,0.10),rgba(232,140,60,0.05));border:1px dashed rgba(232,140,60,0.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);position:relative;overflow:hidden}
+  .half-card::before{content:'';position:absolute;top:-40%;right:-25%;width:180px;height:180px;background:radial-gradient(circle,rgba(232,140,60,0.07),transparent 70%);pointer-events:none}
+  .half-card .htitle{font-family:var(--display);font-weight:700;font-size:14px;margin-bottom:3px;display:flex;align-items:center;gap:7px;position:relative;z-index:1}
+  .half-card .hsub{font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.45;position:relative;z-index:1}
+  .half-row{display:flex;gap:8px;margin-bottom:10px;position:relative;z-index:1}
+  .half-row select{flex:1;background:rgba(0,0,0,0.35);color:var(--text);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:10px 8px;font-size:12.5px;font-family:var(--body);outline:none;cursor:pointer}
+  .half-row select:focus{border-color:var(--accent)}
+  .half-foot{display:flex;align-items:center;justify-content:space-between;margin-top:6px;position:relative;z-index:1}
+  .half-price{font-family:var(--display);font-weight:700;color:var(--accent-light);font-size:15px}
+  .half-add{background:linear-gradient(135deg,var(--accent-light),var(--accent));border:none;color:#1a0f00;font-family:var(--display);font-weight:700;font-size:12px;padding:10px 16px;border-radius:var(--radius-md);cursor:pointer;box-shadow:0 4px 14px rgba(232,140,60,0.28);transition:var(--transition)}
+  .half-add:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,140,60,0.38)}
+  .half-add:active{transform:scale(0.96)}
+
+  ::-webkit-scrollbar{width:3px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:3px}
+  @media(hover:none){.product-card:hover{transform:none}.btn-add-sm:hover{transform:none}.cta:hover{transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap"><div id="app">
+
+<div class="screen active" id="screen-landing">
+  <div class="landing">
+    <div class="landing-glow"></div>
+    <div class="logo-container">
+      <div class="logo-ring"></div>
+      <svg class="logo-flame" viewBox="0 0 40 40" fill="none" stroke="url(#g1)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F6D57B"/><stop offset="100%" stop-color="#E8763C"/></linearGradient></defs>
+        <path d="M20 4c2 5-2 6-2 10 0 2 1.5 3 3 3s3-1.5 3-3c3 2 5 6 5 10 0 6-4 11-9 11S9 30 9 24c0-4 2-7 4-9 0 2 1 3.5 3 3.5 3 0 3-3 2-6C17 9 18 6 20 4z"/>
+      </svg>
+    </div>
+    <div class="wordmark">NANO <span>Resto Bar</span></div>
+    <div class="wordmark-sub">Experiencia Gastronómica</div>
+    <div class="mesa-badge"><span class="dot"></span>Mesa <b>5</b> · cuenta abierta</div>
+    <button class="cta-primary" onclick="openMenu()">Ver el menú →</button>
+    <div class="landing-note">Pedí desde tu celular, seguí agregando rondas y llamá al mozo solo para pagar.</div>
+  </div>
+</div>
+
+<div class="screen" id="screen-menu">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('landing')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Buscar platos, bebidas..." oninput="handleSearch(this.value)">
+    </div>
+    <button class="cart-btn" onclick="goToCart()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="cart-badge" id="cartBadge" style="display:none">0</span>
+    </button>
+  </div>
+
+  <div class="cat-carousel-wrap">
+    <div class="cat-carousel" id="catCarousel"></div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <div class="products-header">
+    <h3 id="productsTitle">Productos</h3>
+    <span class="count" id="productsCount"></span>
+  </div>
+  <div class="products-list" id="productsList"></div>
+</div>
+
+<div class="screen" id="screen-cart">
+  <div class="backrow"><button onclick="goTo('menu')">← seguir pidiendo</button></div>
+  <h1 class="h2">Tu pedido</h1>
+  <div id="cartList"></div>
+</div>
+
+<div class="screen" id="screen-confirm">
+  <div style="text-align:center;padding-top:10px;">
+    <div class="confirm-icon" id="confirmIcon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+  </div>
+  <h1 class="h2" style="text-align:center;" id="confirmTitle">Ronda enviada</h1>
+  <div class="ticket-box" id="ticketBox"></div>
+  <div id="confirmActions" style="margin:18px;display:flex;gap:10px;flex-direction:column;"></div>
+</div>
+
+<div class="bottombar" id="bottombar" style="display:none;"></div>
+</div></div>
+
+<script>
+const ICONS={
+  postre:'<path d="M10 30V16c0-4.5 4.5-8 10-8s10 3.5 10 8v14z"/><path d="M10 30h20"/><path d="M13 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>',
+  pizza:'<path d="M20 6 34 32H6z"/><circle cx="18" cy="24" r="1.5"/><circle cx="24" cy="26.5" r="1.5"/><circle cx="21.5" cy="19" r="1.3"/>',
+  empanada:'<path d="M8 23c0-8.5 6-15 12-15s12 6.5 12 15c0 3.3-2.2 5.5-5.5 5.5h-13C10.2 28.5 8 26.3 8 23z"/><path d="M13.5 27.5c1-2 2-2 3 0M19 27.5c1-2 2-2 3 0M24.5 27.5c1-2 2-2 3 0"/>',
+  sandwich:'<rect x="7" y="14" width="26" height="14" rx="2"/><line x1="7" y1="21" x2="33" y2="21"/><line x1="10" y1="14" x2="10" y2="28"/><line x1="30" y1="14" x2="30" y2="28"/>',
+  lomito:'<path d="M8 24c0-3 5-5 12-5s12 2 12 5-5 5-12 5-12-2-12-5z"/><path d="M9 20c1-4 6-7 11-7s10 3 11 7"/><path d="M11 24c2 1.5 18 1.5 18 0"/>',
+  papas:'<path d="M13 18h14l-1.5 14a2 2 0 01-2 1.8h-7a2 2 0 01-2-1.8L13 18z"/><line x1="17" y1="12" x2="16.5" y2="19"/><line x1="20" y1="10" x2="20" y2="19"/><line x1="23" y1="12" x2="23.5" y2="19"/>',
+  ensalada:'<path d="M7 20c0 7 6 12 13 12s13-5 13-12z"/><path d="M17 20c1-4 4-6 7-6"/><ellipse cx="20" cy="20" rx="13" ry="3"/>',
+  plato:'<circle cx="20" cy="21" r="12"/><line x1="13" y1="12" x2="12" y2="30"/><line x1="27" y1="12" x2="27" y2="30"/>',
+  queso:'<path d="M8 29 20 9 32 29Z"/><circle cx="18" cy="24" r="1.3"/><circle cx="24.5" cy="25" r="1.5"/><circle cx="21" cy="19" r="1.1"/>',
+  pasta:'<path d="M7 19c0 7.5 5.5 12 13 12s13-4.5 13-12"/><path d="M5.5 19h29"/><path d="M16 11c-2-2 .3-4-1.5-6.3M23 9.5c-2-2 .3-4-1.5-6.3"/>',
+  milanesa:'<ellipse cx="20" cy="21" rx="13" ry="8"/><circle cx="14" cy="18" r=".9"/><circle cx="19" cy="16" r=".9"/><circle cx="25" cy="18" r=".9"/><circle cx="16" cy="23" r=".9"/><circle cx="22" cy="24" r=".9"/><circle cx="27" cy="22" r=".9"/>',
+  hamburguesa:'<path d="M8 18c0-5 5.5-9 12-9s12 4 12 9"/><rect x="7" y="18" width="26" height="3" rx="1.5"/><rect x="7" y="23" width="26" height="3" rx="1.5"/><path d="M8 28c0 2.5 5.5 4.5 12 4.5s12-2 12-4.5"/>',
+  cerveza:'<path d="M9.5 12h14.5v18.5c0 2.2-2.2 4-4.9 4h-4.7c-2.7 0-4.9-1.8-4.9-4V12z"/><path d="M24 16.5h4.2c2.1 0 3.3 1.2 3.3 3.2v3.6c0 2-1.2 3.2-3.3 3.2H24"/><path d="M9.5 12c0-2.3 1.4-4.3 3.5-4.3h7.5c2.1 0 3.5 2 3.5 4.3"/>'
+};
+function ic(key,size=40){return `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="width:${size}px;height:${size}px">${ICONS[key]||ICONS.plato}</svg>`}
+
+const CAT_IMAGES={
+  pizzas:'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80',
+  empanadas:'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800&q=80',
+  entradas:'https://images.unsplash.com/photo-1541529086526-db283c563270?w=800&q=80',
+  ensaladas:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80',
+  guarniciones:'https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=800&q=80',
+  milanesas:'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&q=80',
+  hamburguesas:'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80',
+  lomitos:'https://images.unsplash.com/photo-1553909489-cd47e3b4430f?w=800&q=80',
+  miga:'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800&q=80',
+  pastas:'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=800&q=80',
+  elaborados:'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80',
+  postres:'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&q=80',
+  bebidas:'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&q=80',
+};
+
+const CATS=[
+  {id:'pizzas',name:'Pizzas',icon:'pizza',half:true,desc:'Al horno de barro, masa madre'},
+  {id:'empanadas',name:'Empanadas',icon:'empanada',desc:'Horneadas y fritas'},
+  {id:'entradas',name:'Entradas',icon:'queso',desc:'Para compartir'},
+  {id:'ensaladas',name:'Ensaladas',icon:'ensalada',desc:'Frescas y livianas'},
+  {id:'guarniciones',name:'Guarniciones',icon:'papas',desc:'Acompañamientos'},
+  {id:'milanesas',name:'Milanesas',icon:'milanesa',desc:'Clásicas argentinas'},
+  {id:'hamburguesas',name:'Hamburguesas',icon:'hamburguesa',desc:'100% carne vacuna'},
+  {id:'lomitos',name:'Lomitos',icon:'lomito',desc:'Sándwiches de lomo'},
+  {id:'miga',name:'Sándwiches de Miga',icon:'sandwich',desc:'Tradicionales'},
+  {id:'pastas',name:'Pastas',icon:'pasta',desc:'Caseras al día'},
+  {id:'elaborados',name:'Platos Elaborados',icon:'plato',desc:'Especiales de la casa'},
+  {id:'postres',name:'Postres',icon:'postre',desc:'Dulces tentaciones'},
+  {id:'bebidas',name:'Bebidas',icon:'cerveza',desc:'Refrescantes'},
+];
+
+const MENU={
+  pizzas:[
+    {id:'pz1',name:'Muzzarella',desc:'Doble muzzarella y aceitunas negras',price:9800},
+    {id:'pz2',name:'Napolitana',desc:'Tomate fresco, ajo y jamón cocido',price:11200},
+    {id:'pz3',name:'Fugazzeta rellena',desc:'Cebolla caramelizada y queso derretido',price:12500},
+  ],
+  empanadas:[
+    {id:'em1',name:'Carne suave',desc:'Cortada a cuchillo con especias',price:1300},
+    {id:'em2',name:'Jamón y queso',desc:'Clásica y cremosa',price:1300},
+    {id:'em3',name:'Humita',desc:'Choclo tierno y salsa blanca',price:1400},
+  ],
+  entradas:[
+    {id:'en1',name:'Provoleta',desc:'Queso provolone, orégano y ají molido',price:5200},
+    {id:'en2',name:'Tabla de fiambres',desc:'Selección para compartir en pareja',price:8900},
+    {id:'en3',name:'Rabas',desc:'Calamares fritos con limón y alioli',price:9600},
+  ],
+  ensaladas:[
+    {id:'es1',name:'Caprese',desc:'Tomate, muzzarella de búfala y albahaca',price:6400},
+    {id:'es2',name:'César con pollo',desc:'Pollo grillado y aderezo casero',price:7800},
+    {id:'es3',name:'Mixta',desc:'Lechuga, tomate, zanahoria y huevo',price:4900},
+  ],
+  guarniciones:[
+    {id:'gu1',name:'Papas fritas',desc:'Crocantes y doradas',price:3200},
+    {id:'gu2',name:'Puré de papas',desc:'Con manteca y nuez moscada',price:3000},
+    {id:'gu3',name:'Ensalada rusa',desc:'Clásica con mayonesa casera',price:3200},
+  ],
+  milanesas:[
+    {id:'mi1',name:'Napolitana',desc:'Con salsa, jamón y papas fritas',price:9800},
+    {id:'mi2',name:'A caballo',desc:'Con dos huevos fritos estrellados',price:9200},
+    {id:'mi3',name:'Suprema de pollo',desc:'Pechuga empanada y frita',price:8600},
+  ],
+  hamburguesas:[
+    {id:'ha1',name:'Clásica',desc:'Cheddar, panceta y cebolla crocante',price:7400},
+    {id:'ha2',name:'Doble',desc:'Doble carne smash y doble queso',price:9200},
+    {id:'ha3',name:'Veggie',desc:'Medallón de garbanzos y especias',price:7000},
+  ],
+  lomitos:[
+    {id:'lo1',name:'Lomito completo',desc:'Jamón, queso, huevo y lechuga',price:8800},
+    {id:'lo2',name:'Lomito al plato',desc:'Con guarnición a elección',price:10500},
+    {id:'lo3',name:'Lomito árabe',desc:'Pan pita y salsa de yogur',price:9100},
+  ],
+  miga:[
+    {id:'sm1',name:'Jamón y queso',desc:'Docena de sándwiches clásicos',price:6600},
+    {id:'sm2',name:'Especiales',desc:'Jamón, queso, lechuga y tomate',price:7800},
+    {id:'sm3',name:'Vegetarianos',desc:'Docena con variedad veggie',price:6200},
+  ],
+  pastas:[
+    {id:'pa1',name:'Sorrentinos',desc:'Jamón y queso con salsa a elección',price:8400},
+    {id:'pa2',name:'Ñoquis caseros',desc:'De papa con salsa filetto',price:7600},
+    {id:'pa3',name:'Fettuccine Alfredo',desc:'Crema, parmesano y nuez moscada',price:8200},
+  ],
+  elaborados:[
+    {id:'pl1',name:'Suprema rellena',desc:'Jamón y queso con guarnición',price:10200},
+    {id:'pl2',name:'Matambre a la pizza',desc:'Con muzzarella y orégano',price:11500},
+    {id:'pl3',name:'Pollo al verdeo',desc:'Con crema y arroz blanco',price:9800},
+  ],
+  postres:[
+    {id:'po1',name:'Flan casero',desc:'Con dulce de leche artesanal',price:3600},
+    {id:'po2',name:'Volcán de chocolate',desc:'Con helado de vainilla',price:4200},
+    {id:'po3',name:'Ensalada de frutas',desc:'Frutas de estación',price:3200},
+  ],
+  bebidas:[
+    {id:'be1',name:'Gaseosa Coca-Cola',desc:'500ml línea Coca-Cola',price:2200},
+    {id:'be2',name:'Cerveza artesanal',desc:'Pinta de 500ml IPA o rubia',price:3400},
+    {id:'be3',name:'Agua con/sin gas',desc:'500ml mineral',price:1500},
+  ],
+};
+
+let state={cat:'pizzas',cart:{},comboCart:[],cuenta:[]};
+
+function fmt(n){return "$"+Math.round(n).toLocaleString("es-AR")}
+function itemsOf(catId){return MENU[catId].map(i=>({...i,catId}))}
+function findItem(id){for(const c in MENU){const f=MENU[c].find(i=>i.id===id);if(f)return{...f,catId:c}}}
+
+function openMenu(){goTo('menu');renderMenu();}
+function goTo(screen){
+  document.querySelectorAll('#app .screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+screen).classList.add('active');
+  renderBottombar(screen);
+}
+
+function renderMenu(){
+  renderCatCarousel();
+  renderProducts();
+  updateCartBadge();
+}
+
+function renderCatCarousel(){
+  const el=document.getElementById('catCarousel');el.innerHTML='';
+  CATS.forEach((c,idx)=>{
+    const item=document.createElement('div');
+    item.className='cat-carousel-item'+(c.id===state.cat?' active':'');
+    item.dataset.catId=c.id;
+    item.innerHTML=`<div class="cat-carousel-img">
+      <img src="${CAT_IMAGES[c.id]||CAT_IMAGES.pizzas}" alt="${c.name}" loading="lazy" onerror="this.style.display='none'">
+    </div>
+    <div class="cat-carousel-name">${c.name}</div>
+    <div class="cat-carousel-desc">${c.desc}</div>
+    <div class="cat-carousel-indicator"></div>`;
+    item.onclick=()=>scrollToCat(c.id);
+    el.appendChild(item);
+  });
+  // Scroll active into center
+  setTimeout(()=>{
+    const active=el.querySelector('.cat-carousel-item.active');
+    if(active)active.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
+  },10);
+}
+
+function scrollToCat(catId){
+  state.cat=catId;
+  document.getElementById('searchInput').value='';
+  renderCatCarousel();
+  renderProducts();
+}
+
+// Detect scroll snap change
+function setupCarouselObserver(){
+  const carousel=document.getElementById('catCarousel');
+  if(!carousel)return;
+  const items=carousel.querySelectorAll('.cat-carousel-item');
+  const observer=new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting&&entry.intersectionRatio>=0.6){
+        const catId=entry.target.dataset.catId;
+        if(catId&&catId!==state.cat){
+          state.cat=catId;
+          document.getElementById('searchInput').value='';
+          // Update active classes without full re-render
+          items.forEach(it=>it.classList.toggle('active',it.dataset.catId===catId));
+          renderProducts();
+        }
+      }
+    });
+  },{root:carousel,threshold:0.6});
+  items.forEach(item=>observer.observe(item));
+}
+
+function getFilteredItems(){
+  const query=document.getElementById('searchInput').value.trim().toLowerCase();
+  if(!query)return itemsOf(state.cat);
+  const all=[];
+  for(const catId in MENU){
+    MENU[catId].forEach(it=>{
+      if(it.name.toLowerCase().includes(query)||(it.desc&&it.desc.toLowerCase().includes(query))){
+        all.push({...it,catId});
+      }
+    });
+  }
+  return all;
+}
+
+function handleSearch(val){
+  renderProducts();
+}
+
+function renderProducts(){
+  const items=getFilteredItems();
+  const cat=CATS.find(c=>c.id===state.cat);
+  const isSearch=document.getElementById('searchInput').value.trim().length>0;
+  document.getElementById('productsTitle').textContent=isSearch?'Resultados':cat.name;
+  document.getElementById('productsCount').textContent=items.length+' opciones';
+  const el=document.getElementById('productsList');el.innerHTML='';
+  items.forEach(it=>el.appendChild(renderProductCard(it)));
+  if(cat.half&&!isSearch)el.appendChild(renderHalfCard(cat));
+}
+
+function renderProductCard(it){
+  const card=document.createElement('div');card.className='product-card';
+  const entry=state.cart[it.id]||{qty:0,note:''};
+  card.innerHTML=`<div class="product-info">
+    <strong>${it.name}</strong>
+    <div class="desc">${it.desc||''}</div>
+    <div class="price">${fmt(it.price)}</div>
+    <div id="noteArea-${it.id}"></div>
+  </div>
+  <div class="product-actions">
+    <div id="stepper-${it.id}"></div>
+  </div>`;
+  setTimeout(()=>{renderStepper(it.id,entry.qty);renderNoteArea(it.id,entry)},0);
+  return card;
+}
+
+function renderStepper(id,qty){
+  const holder=document.getElementById('stepper-'+id);if(!holder)return;
+  holder.innerHTML=qty===0?`<button class="btn-add-sm" onclick="changeQty('${id}',1)">+</button>`
+    :`<div class="stepper-sm"><button onclick="changeQty('${id}',-1)">−</button><span class="qty">${qty}</span><button onclick="changeQty('${id}',1)">+</button></div>`;
+}
+
+function renderNoteArea(id,entry){
+  const holder=document.getElementById('noteArea-'+id);if(!holder)return;
+  if(entry.qty===0){holder.innerHTML='';return}
+  if(entry.showInput){
+    holder.innerHTML=`<input class="note-input-sm" placeholder="Ej: sin cebolla..." value="${entry.note||''}" onblur="saveNote('${id}',this.value)">`;
+    setTimeout(()=>{const inp=holder.querySelector('input');if(inp)inp.focus()},0);
+  }else if(entry.note){
+    holder.innerHTML=`<span class="note-chip-sm">📝 ${entry.note}</span> <button class="note-link-sm" style="display:inline;" onclick="toggleNote('${id}')">editar</button>`;
+  }else{
+    holder.innerHTML=`<button class="note-link-sm" onclick="toggleNote('${id}')">＋ nota</button>`;
+  }
+}
+function toggleNote(id){state.cart[id].showInput=true;renderNoteArea(id,state.cart[id])}
+function saveNote(id,val){if(!state.cart[id])return;state.cart[id].note=val.trim();state.cart[id].showInput=false;renderNoteArea(id,state.cart[id])}
+
+function changeQty(id,delta){
+  const cur=state.cart[id]||{qty:0,note:''};
+  const next=Math.max(0,cur.qty+delta);
+  if(next===0)delete state.cart[id];else state.cart[id]={...cur,qty:next};
+  renderStepper(id,next);renderNoteArea(id,state.cart[id]||{qty:0,note:''});
+  updateCartBadge();renderBottombar('menu');
+}
+
+function updateCartBadge(){
+  const lines=allCartLines();const count=lines.reduce((s,l)=>s+l.qty,0);
+  const badge=document.getElementById('cartBadge');
+  if(count>0){badge.textContent=count;badge.style.display='flex'}else{badge.style.display='none'}
+}
+
+function renderHalfCard(cat){
+  const opts=itemsOf(cat.id);
+  const card=document.createElement('div');card.className='half-card';
+  card.innerHTML=`<div class="htitle">${ic(cat.icon,16)} Mitad y mitad</div>
+    <div class="hsub">Elegí dos sabores para combinar. El precio es el promedio.</div>
+    <div class="half-row">
+      <select id="halfA">${opts.map(o=>`<option value="${o.id}">${o.name}</option>`).join('')}</select>
+      <select id="halfB">${opts.map((o,i)=>`<option value="${o.id}" ${i===1?'selected':''}>${o.name}</option>`).join('')}</select>
+    </div>
+    <div class="half-foot">
+      <span class="half-price" id="halfPrice">${fmt((opts[0].price+opts[1].price)/2)}</span>
+      <button class="half-add" onclick="addHalf('${cat.id}')">Agregar</button>
+    </div>`;
+  setTimeout(()=>{document.getElementById('halfA').onchange=document.getElementById('halfB').onchange=()=>updateHalfPrice(cat.id)},0);
+  return card;
+}
+function updateHalfPrice(catId){
+  const a=findItem(document.getElementById('halfA').value);
+  const b=findItem(document.getElementById('halfB').value);
+  document.getElementById('halfPrice').textContent=fmt((a.price+b.price)/2);
+}
+function addHalf(catId){
+  const a=findItem(document.getElementById('halfA').value);
+  const b=findItem(document.getElementById('halfB').value);
+  if(a.id===b.id){alert('Elegí dos sabores distintos.');return}
+  const price=(a.price+b.price)/2;
+  const existing=state.comboCart.find(c=>c.aId===a.id&&c.bId===b.id);
+  if(existing)existing.qty+=1;
+  else state.comboCart.push({key:'combo-'+a.id+'-'+b.id,aId:a.id,bId:b.id,name:`Mitad ${a.name} / mitad ${b.name}`,price,qty:1,catIcon:CATS.find(c=>c.id===catId).icon});
+  updateCartBadge();renderBottombar('menu');
+}
+
+function allCartLines(){
+  const regular=Object.entries(state.cart).map(([id,entry])=>{
+    const item=findItem(id);
+    return{key:id,name:item.name,desc:entry.note||'',price:item.price,qty:entry.qty,catIcon:CATS.find(c=>c.id===item.catId).icon};
+  });
+  return[...regular,...state.comboCart];
+}
+function cartTotal(lines){return lines.reduce((s,l)=>s+l.price*l.qty,0)}
+
+function renderBottombar(screen){
+  const bar=document.getElementById('bottombar');
+  if(screen==='menu'){
+    const lines=allCartLines();const total=cartTotal(lines);const count=lines.reduce((s,l)=>s+l.qty,0);
+    if(count===0){bar.style.display='none';return}
+    bar.style.display='flex';
+    bar.innerHTML=`<div class="total">${count} ítem${count>1?'s':''}<b>${fmt(total)}</b></div><button class="cta" onclick="goToCart()">Ver ronda →</button>`;
+  }else if(screen==='cart'){
+    const lines=allCartLines();const total=cartTotal(lines);
+    bar.style.display='flex';
+    bar.innerHTML=`<div class="total">Total ronda<b>${fmt(total)}</b></div><button class="cta" ${lines.length===0?'disabled':''} onclick="sendRound()">Enviar a cocina</button>`;
+  }else{bar.style.display='none'}
+}
+
+function goToCart(){
+  const lines=allCartLines();
+  const el=document.getElementById('cartList');
+  el.innerHTML=lines.length===0?'<div class="empty-cart">Todavía no agregaste nada</div>'
+    :lines.map(l=>`<div class="cart-line">
+      <div class="ic">${ic(l.catIcon,18)}</div>
+      <div class="info"><strong>${l.qty}× ${l.name}</strong>${l.desc?`<span class="desc">📝 ${l.desc}</span>`:''}</div>
+      <div class="price">${fmt(l.price*l.qty)}</div>
+    </div>`).join('');
+  goTo('cart');
+}
+
+function sendRound(){
+  const lines=allCartLines();const total=cartTotal(lines);
+  const time=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  state.cuenta.push({lines,total,time});
+  state.cart={};state.comboCart=[];
+  const cuentaTotal=state.cuenta.reduce((s,r)=>s+r.total,0);
+  document.getElementById('confirmTitle').textContent='Ronda enviada a cocina';
+  document.getElementById('ticketBox').innerHTML=`<div class="row"><span>MESA</span><span>5</span></div>
+    <div class="row"><span>RONDA</span><span>#${state.cuenta.length}</span></div>
+    <div class="row"><span>HORA</span><span>${time}</span></div><hr>
+    ${lines.map(l=>`<div class="row"><span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
+    <hr><div class="row tot"><span>TOTAL CUENTA</span><span>${fmt(cuentaTotal)}</span></div>
+    <div class="status-line">El mozo ve esta ronda al instante en el panel del local.</div>`;
+  document.getElementById('confirmActions').innerHTML=`<button class="cta" onclick="backToMenu()">Pedir algo más</button><button class="cta ghost" onclick="askBill()">Pedir la cuenta</button>`;
+  goTo('confirm');
+}
+function backToMenu(){goTo('menu');renderMenu();}
+
+function askBill(){
+  const cuentaTotal=state.cuenta.reduce((s,r)=>s+r.total,0);
+  document.getElementById('confirmTitle').textContent='Cuenta solicitada';
+  document.getElementById('ticketBox').innerHTML=`<div class="row"><span>MESA</span><span>5</span></div>
+    <div class="row"><span>RONDAS</span><span>${state.cuenta.length}</span></div><hr>
+    <div class="row tot"><span>TOTAL A PAGAR</span><span>${fmt(cuentaTotal)}</span></div>
+    <div class="status-line">Se paga en el local (caja o mesa), en efectivo o transferencia.</div>`;
+  document.getElementById('confirmActions').innerHTML=`<button class="cta ghost" onclick="resetDemo()">Volver al inicio</button>`;
+}
+
+function resetDemo(){
+  state={cat:'pizzas',cart:{},comboCart:[],cuenta:[]};
+  document.getElementById('searchInput').value='';
+  goTo('landing');
+}
+
+// Init carousel observer after first render
+window.addEventListener('load',()=>{
+  setTimeout(setupCarouselObserver,100);
+});
+</script>
+</body>
+</html>
