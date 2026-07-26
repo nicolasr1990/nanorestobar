@@ -42,6 +42,7 @@
   .logo-ring::before{content:'';position:absolute;inset:7px;border-radius:50%;border:1px solid rgba(232,140,60,0.18)}
   .logo-ring::after{content:'';position:absolute;inset:14px;border-radius:50%;border:1px dashed rgba(232,140,60,0.12);animation:spin 32s linear infinite reverse}
   .logo-flame{position:relative;z-index:2;width:50px;height:50px;filter:drop-shadow(0 0 18px rgba(232,140,60,0.35))}
+  .logo-img{display:none;position:relative;z-index:2;width:68px;height:68px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 0 18px rgba(232,140,60,0.3))}
   .wordmark{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:-0.02em;color:var(--text)}
   .wordmark span{color:var(--accent);font-weight:700}
   .wordmark-sub{font-family:var(--body);font-weight:500;font-size:10.5px;letter-spacing:0.38em;color:var(--accent);text-transform:uppercase;margin-top:5px;opacity:0.75}
@@ -70,9 +71,9 @@
   .cart-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:50%;background:var(--accent);color:#1a0f00;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
 
   /* ===== BIG CATEGORY CAROUSEL (scroll on big images) ===== */
-  .cat-carousel-wrap{position:relative;padding:24px 0 6px;overflow:hidden}
+  .cat-carousel-wrap{position:relative;padding:34px 0 10px;overflow-x:hidden;overflow-y:visible}
   .cat-carousel{
-    display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+    display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;scroll-behavior:smooth;
     padding:0 calc(50% - 105px) 10px;-webkit-overflow-scrolling:touch;
   }
   .cat-carousel::-webkit-scrollbar{display:none}
@@ -90,8 +91,12 @@
   .cat-carousel-item.active .cat-carousel-img{
     border-color:rgba(232,140,60,0.55);box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 50px rgba(232,140,60,0.25);
   }
-  .cat-carousel-img img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s cubic-bezier(0.4,0,0.2,1)}
+  .cat-carousel-img img{width:100%;height:100%;object-fit:cover;object-position:center 38%;transition:transform 0.6s cubic-bezier(0.4,0,0.2,1)}
   .cat-carousel-img::after{content:'';position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 30px rgba(0,0,0,0.4)}
+  .cat-carousel-img.img-fallback{background:linear-gradient(150deg,var(--accent),var(--ember));display:flex;align-items:center;justify-content:center}
+  .cat-carousel-img.img-fallback img{display:none}
+  .cat-fallback-icon{display:none;width:70px;height:70px;color:rgba(255,255,255,.9);stroke-width:1.6}
+  .cat-carousel-img.img-fallback .cat-fallback-icon{display:block}
   .cat-carousel-name{font-family:var(--display);font-weight:700;font-size:18px;margin-top:14px;letter-spacing:-0.01em;opacity:0;transition:opacity 0.3s}
   .cat-carousel-item.active .cat-carousel-name{opacity:1}
   .cat-carousel-desc{font-size:11.5px;color:var(--text-secondary);margin-top:2px;opacity:0;transition:opacity 0.3s}
@@ -227,7 +232,8 @@
     <div class="landing-glow"></div>
     <div class="logo-container">
       <div class="logo-ring"></div>
-      <svg class="logo-flame" viewBox="0 0 40 40" fill="none" stroke="url(#g1)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <img class="logo-img" id="logoImg" alt="Nano Resto Bar" onload="this.style.display='block';document.getElementById('logoFlame').style.display='none'" onerror="this.style.display='none'">
+      <svg class="logo-flame" id="logoFlame" viewBox="0 0 40 40" fill="none" stroke="url(#g1)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F6D57B"/><stop offset="100%" stop-color="#E8763C"/></linearGradient></defs>
         <path d="M20 4c2 5-2 6-2 10 0 2 1.5 3 3 3s3-1.5 3-3c3 2 5 6 5 10 0 6-4 11-9 11S9 30 9 24c0-4 2-7 4-9 0 2 1 3.5 3 3.5 3 0 3-3 2-6C17 9 18 6 20 4z"/>
       </svg>
@@ -306,23 +312,28 @@ const ICONS={
 };
 function ic(key,size=40){return `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="width:${size}px;height:${size}px">${ICONS[key]||ICONS.plato}</svg>`}
 
-const CAT_IMAGES={
-  pizzas:'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80',
-  empanadas:'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800&q=80',
-  entradas:'https://images.unsplash.com/photo-1541529086526-db283c563270?w=800&q=80',
-  ensaladas:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80',
-  guarniciones:'https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=800&q=80',
-  milanesas:'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&q=80',
-  hamburguesas:'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80',
-  lomitos:'https://images.unsplash.com/photo-1553909489-cd47e3b4430f?w=800&q=80',
-  miga:'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800&q=80',
-  pastas:'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=800&q=80',
-  elaborados:'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80',
-  postres:'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&q=80',
-  bebidas:'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&q=80',
+// ============================================================
+// CONFIGURACIÓN — lo único que hay que tocar a medida que subís cosas al repo
+// ============================================================
+const CONFIG = {
+  // URL del logo. Subí tu logo.png a la raíz del repo (junto a este index.html) y dejalo así.
+  LOGO_URL: 'logo.png',
+  // URL del Web App de Apps Script (Implementar > Nueva implementación > Aplicación web).
+  // Mientras esté vacío, la app usa el menú de acá abajo (CATS/MENU) como demo offline.
+  APPS_SCRIPT_URL: '', // ej: 'https://script.google.com/macros/s/AKfycb.../exec'
 };
 
-const CATS=[
+// Fotos de categoría: subí un archivo por categoría a la carpeta /img del repo con estos
+// nombres exactos (jpg o png, cualquiera de los dos funciona por el fallback de abajo).
+// Ej: /img/pizzas.jpg, /img/empanadas.jpg, etc. Mientras no subas el archivo, se muestra
+// automáticamente el ícono de la categoría en vez de la foto (no queda roto).
+const CAT_IMAGES = {};
+['pizzas','empanadas','entradas','ensaladas','guarniciones','milanesas','hamburguesas',
+ 'lomitos','miga','pastas','elaborados','postres','bebidas'].forEach(id=>{
+  CAT_IMAGES[id] = `img/${id}.jpg`;
+});
+
+let CATS=[
   {id:'pizzas',name:'Pizzas',icon:'pizza',half:true,desc:'Al horno de barro, masa madre'},
   {id:'empanadas',name:'Empanadas',icon:'empanada',desc:'Horneadas y fritas'},
   {id:'entradas',name:'Entradas',icon:'queso',desc:'Para compartir'},
@@ -338,7 +349,7 @@ const CATS=[
   {id:'bebidas',name:'Bebidas',icon:'cerveza',desc:'Refrescantes'},
 ];
 
-const MENU={
+let MENU={
   pizzas:[
     {id:'pz1',name:'Muzzarella',desc:'Doble muzzarella y aceitunas negras',price:9800},
     {id:'pz2',name:'Napolitana',desc:'Tomate fresco, ajo y jamón cocido',price:11200},
@@ -406,6 +417,49 @@ const MENU={
   ],
 };
 
+// Guardamos ícono/descripción/mitad-y-mitad de cada categoría como "metadata local":
+// eso no vive en el Sheet, así que cuando lleguen los datos reales del Sheet los combinamos
+// con esto en vez de perderlos.
+const CATS_META = {};
+CATS.forEach(c => { CATS_META[c.id] = { icon: c.icon, desc: c.desc, half: c.half }; });
+
+function fetchMenuFromSheet(){
+  if(!CONFIG.APPS_SCRIPT_URL){
+    console.info('CONFIG.APPS_SCRIPT_URL vacío: se usa el menú de demo hardcodeado en este archivo.');
+    return;
+  }
+  fetch(`${CONFIG.APPS_SCRIPT_URL}?action=menu&canal=mesa`)
+    .then(r => r.json())
+    .then(data => {
+      if(!data || !Array.isArray(data.categorias) || !Array.isArray(data.productos)) return;
+
+      const newCats = data.categorias.map(c => ({
+        id: c.id,
+        name: c.nombre,
+        icon: (CATS_META[c.id] && CATS_META[c.id].icon) || 'plato',
+        desc: (CATS_META[c.id] && CATS_META[c.id].desc) || c.nombre,
+        half: !!c.permite_mitad,
+      }));
+
+      const newMenu = {};
+      newCats.forEach(c => { newMenu[c.id] = []; });
+      data.productos.forEach(p => {
+        if(!newMenu[p.categoria_id]) newMenu[p.categoria_id] = [];
+        newMenu[p.categoria_id].push({ id: p.id, name: p.nombre, desc: p.descripcion, price: Number(p.precio) });
+      });
+
+      CATS = newCats;
+      MENU = newMenu;
+
+      // Si ya estaba mirando el menú, lo refrescamos con los datos reales sin que tenga que recargar la página
+      if(document.getElementById('screen-menu').classList.contains('active')){
+        if(!CATS.find(c => c.id === state.cat)) state.cat = CATS[0] ? CATS[0].id : state.cat;
+        renderMenu();
+      }
+    })
+    .catch(err => console.warn('No se pudo cargar el menú del Sheet, se sigue mostrando el demo local.', err));
+}
+
 let state={cat:'pizzas',cart:{},comboCart:[],cuenta:[]};
 
 function fmt(n){return "$"+Math.round(n).toLocaleString("es-AR")}
@@ -425,6 +479,14 @@ function renderMenu(){
   updateCartBadge();
 }
 
+function handleCatImgError(img){
+  if(img.dataset.triedPng){ img.parentElement.classList.add('img-fallback'); return; }
+  img.dataset.triedPng = '1';
+  img.src = img.src.replace(/\.jpg$/i, '.png');
+}
+
+let carouselObserver=null;
+
 function renderCatCarousel(){
   const el=document.getElementById('catCarousel');el.innerHTML='';
   CATS.forEach((c,idx)=>{
@@ -432,7 +494,8 @@ function renderCatCarousel(){
     item.className='cat-carousel-item'+(c.id===state.cat?' active':'');
     item.dataset.catId=c.id;
     item.innerHTML=`<div class="cat-carousel-img">
-      <img src="${CAT_IMAGES[c.id]||CAT_IMAGES.pizzas}" alt="${c.name}" loading="lazy" onerror="this.style.display='none'">
+      <img src="${CAT_IMAGES[c.id]||CAT_IMAGES.pizzas}" alt="${c.name}" loading="lazy" onerror="handleCatImgError(this)">
+      <div class="cat-fallback-icon">${ic(c.icon,70)}</div>
     </div>
     <div class="cat-carousel-name">${c.name}</div>
     <div class="cat-carousel-desc">${c.desc}</div>
@@ -440,40 +503,44 @@ function renderCatCarousel(){
     item.onclick=()=>scrollToCat(c.id);
     el.appendChild(item);
   });
-  // Scroll active into center
+  // Centrar el activo y volver a enganchar el observer sobre los nodos nuevos
   setTimeout(()=>{
     const active=el.querySelector('.cat-carousel-item.active');
     if(active)active.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
+    setupCarouselObserver();
   },10);
 }
 
 function scrollToCat(catId){
+  if(catId===state.cat)return;
   state.cat=catId;
   document.getElementById('searchInput').value='';
   renderCatCarousel();
   renderProducts();
 }
 
-// Detect scroll snap change
+// Detecta qué imagen quedó centrada al deslizar y sincroniza la lista de abajo.
+// Se reconstruye en cada render porque el innerHTML='' de arriba destruye los nodos anteriores
+// y un IntersectionObserver viejo se queda "mirando" elementos que ya no existen.
 function setupCarouselObserver(){
+  if(carouselObserver)carouselObserver.disconnect();
   const carousel=document.getElementById('catCarousel');
   if(!carousel)return;
   const items=carousel.querySelectorAll('.cat-carousel-item');
-  const observer=new IntersectionObserver((entries)=>{
+  carouselObserver=new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
       if(entry.isIntersecting&&entry.intersectionRatio>=0.6){
         const catId=entry.target.dataset.catId;
         if(catId&&catId!==state.cat){
           state.cat=catId;
           document.getElementById('searchInput').value='';
-          // Update active classes without full re-render
           items.forEach(it=>it.classList.toggle('active',it.dataset.catId===catId));
           renderProducts();
         }
       }
     });
-  },{root:carousel,threshold:0.6});
-  items.forEach(item=>observer.observe(item));
+  },{root:carousel,threshold:[0.6]});
+  items.forEach(item=>carouselObserver.observe(item));
 }
 
 function getFilteredItems(){
@@ -657,10 +724,10 @@ function resetDemo(){
   goTo('landing');
 }
 
-// Init carousel observer after first render
-window.addEventListener('load',()=>{
-  setTimeout(setupCarouselObserver,100);
-});
+// ---------- Init ----------
+document.getElementById('logoImg').src = CONFIG.LOGO_URL;
+fetchMenuFromSheet();
+
 </script>
 </body>
 </html>
