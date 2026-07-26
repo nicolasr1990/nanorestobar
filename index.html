@@ -240,9 +240,20 @@
     </div>
     <div class="wordmark">NANO <span>Resto Bar</span></div>
     <div class="wordmark-sub">Experiencia Gastronómica</div>
-    <div class="mesa-badge"><span class="dot"></span>Mesa <b>5</b> · cuenta abierta</div>
+    <div class="mesa-badge"><span class="dot"></span>Mesa <b id="mesaNum">5</b> · cuenta abierta</div>
     <button class="cta-primary" onclick="openMenu()">Ver el menú →</button>
     <div class="landing-note">Pedí desde tu celular, seguí agregando rondas y llamá al mozo solo para pagar.</div>
+  </div>
+</div>
+
+<div class="screen" id="screen-invalido">
+  <div class="landing">
+    <div class="landing-glow"></div>
+    <div style="font-size:44px;margin-bottom:14px;">⚠️</div>
+    <div class="wordmark">QR no válido</div>
+    <div class="landing-note" style="margin-top:16px;">
+      Este código no corresponde a ninguna mesa activa. Pedile al mozo que te acerque la carta o que verifique el cartel de la mesa.
+    </div>
   </div>
 </div>
 
@@ -320,8 +331,15 @@ const CONFIG = {
   LOGO_URL: 'logo.png',
   // URL del Web App de Apps Script (Implementar > Nueva implementación > Aplicación web).
   // Mientras esté vacío, la app usa el menú de acá abajo (CATS/MENU) como demo offline.
-  APPS_SCRIPT_URL: '', // ej: 'https://script.google.com/macros/s/AKfycb.../exec'
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwZbKOiZmtimoOVp8dt5wAehccD1J-fQTLfGLk8oMf6AAdFkoN1_G3x7zGoQXFHMHqubg/exec', // ej: 'https://script.google.com/macros/s/AKfycb.../exec'
 };
+
+// La mesa y el token llegan por la URL del QR: https://tu-sitio/?mesa=6&t=a91f3c2b
+// Cada QR físico tiene su propio token (ver pestaña Mesas del Sheet). Sin esos parámetros
+// (por ej. si entrás escribiendo la URL a mano) queda en modo demo con mesa "5" sin token.
+const URL_PARAMS = new URLSearchParams(location.search);
+const MESA_URL = URL_PARAMS.get('mesa');
+const TOKEN_URL = URL_PARAMS.get('t');
 
 // Fotos de categoría: subí un archivo por categoría a la carpeta /img del repo con estos
 // nombres exactos (jpg o png, cualquiera de los dos funciona por el fallback de abajo).
@@ -460,7 +478,7 @@ function fetchMenuFromSheet(){
     .catch(err => console.warn('No se pudo cargar el menú del Sheet, se sigue mostrando el demo local.', err));
 }
 
-let state={cat:'pizzas',cart:{},comboCart:[],cuenta:[]};
+let state={cat:'pizzas',cart:{},comboCart:[],cuenta:[],mesa: MESA_URL || '5', token: TOKEN_URL || null};
 
 function fmt(n){return "$"+Math.round(n).toLocaleString("es-AR")}
 function itemsOf(catId){return MENU[catId].map(i=>({...i,catId}))}
@@ -697,7 +715,7 @@ function sendRound(){
   state.cart={};state.comboCart=[];
   const cuentaTotal=state.cuenta.reduce((s,r)=>s+r.total,0);
   document.getElementById('confirmTitle').textContent='Ronda enviada a cocina';
-  document.getElementById('ticketBox').innerHTML=`<div class="row"><span>MESA</span><span>5</span></div>
+  document.getElementById('ticketBox').innerHTML=`<div class="row"><span>MESA</span><span>${state.mesa||'-'}</span></div>
     <div class="row"><span>RONDA</span><span>#${state.cuenta.length}</span></div>
     <div class="row"><span>HORA</span><span>${time}</span></div><hr>
     ${lines.map(l=>`<div class="row"><span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
@@ -711,7 +729,7 @@ function backToMenu(){goTo('menu');renderMenu();}
 function askBill(){
   const cuentaTotal=state.cuenta.reduce((s,r)=>s+r.total,0);
   document.getElementById('confirmTitle').textContent='Cuenta solicitada';
-  document.getElementById('ticketBox').innerHTML=`<div class="row"><span>MESA</span><span>5</span></div>
+  document.getElementById('ticketBox').innerHTML=`<div class="row"><span>MESA</span><span>${state.mesa||'-'}</span></div>
     <div class="row"><span>RONDAS</span><span>${state.cuenta.length}</span></div><hr>
     <div class="row tot"><span>TOTAL A PAGAR</span><span>${fmt(cuentaTotal)}</span></div>
     <div class="status-line">Se paga en el local (caja o mesa), en efectivo o transferencia.</div>`;
@@ -719,14 +737,33 @@ function askBill(){
 }
 
 function resetDemo(){
-  state={cat:'pizzas',cart:{},comboCart:[],cuenta:[]};
+  state={cat:'pizzas',cart:{},comboCart:[],cuenta:[],mesa:state.mesa,token:state.token};
   document.getElementById('searchInput').value='';
   goTo('landing');
 }
 
 // ---------- Init ----------
+document.getElementById('mesaNum').textContent = state.mesa;
 document.getElementById('logoImg').src = CONFIG.LOGO_URL;
 fetchMenuFromSheet();
+validarMesaAlCargar();
+
+function validarMesaAlCargar(){
+  // Sin URL de Apps Script todavía: no hay contra qué validar, se queda en modo demo.
+  if(!CONFIG.APPS_SCRIPT_URL) return;
+  // Sin parámetros de mesa en la URL (alguien entró directo): tampoco bloqueamos, es el modo demo/pruebas.
+  if(!MESA_URL) return;
+
+  fetch(`${CONFIG.APPS_SCRIPT_URL}?action=validarMesa&mesa=${encodeURIComponent(MESA_URL)}&token=${encodeURIComponent(TOKEN_URL||'')}`)
+    .then(r=>r.json())
+    .then(data=>{
+      if(!data.valida){
+        document.querySelectorAll('#app .screen').forEach(s=>s.classList.remove('active'));
+        document.getElementById('screen-invalido').classList.add('active');
+      }
+    })
+    .catch(err=>console.warn('No se pudo validar la mesa contra el Sheet, se sigue en modo demo.', err));
+}
 
 </script>
 </body>
