@@ -754,10 +754,17 @@ fetchMenuFromSheet();
 validarMesaAlCargar();
 
 function validarMesaAlCargar(){
-  // Sin URL de Apps Script todavía: no hay contra qué validar, se queda en modo demo.
+  // Sin URL de Apps Script todavía: no hay contra qué validar, se queda en modo demo (desarrollo local).
   if(!CONFIG.APPS_SCRIPT_URL) return;
-  // Sin parámetros de mesa en la URL (alguien entró directo): tampoco bloqueamos, es el modo demo/pruebas.
-  if(!MESA_URL) return;
+
+  // Con el Apps Script ya conectado, entrar sin ?mesa= en la URL (por ej. compartiendo el link pelado
+  // por WhatsApp o Instagram) ya no es válido: hoy el único canal que existe es "mesa", y a una mesa
+  // solo se llega escaneando su QR. El día que se sume retiro/envío, esto se reemplaza por un selector.
+  if(!MESA_URL){
+    document.querySelectorAll('#app .screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screen-invalido').classList.add('active');
+    return;
+  }
 
   fetch(`${CONFIG.APPS_SCRIPT_URL}?action=validarMesa&mesa=${encodeURIComponent(MESA_URL)}&token=${encodeURIComponent(TOKEN_URL||'')}`)
     .then(r=>r.json())
