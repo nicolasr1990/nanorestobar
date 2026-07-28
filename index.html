@@ -249,6 +249,11 @@
   .cart-line .desc{font-size:11px;color:var(--text-secondary)}
   .cart-line .cat-tag{display:block;font-size:10.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:2px}
   .cart-line .price{font-size:14px;font-family:var(--display);font-weight:700;color:var(--accent-light);white-space:nowrap}
+  .cart-line-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+  .cart-line-del{width:26px;height:26px;border-radius:50%;border:1px solid var(--glass-border);background:var(--surface);color:var(--text-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition);flex-shrink:0}
+  .cart-line-del svg{width:13px;height:13px}
+  .cart-line-del:hover{background:rgba(220,70,60,0.16);border-color:rgba(220,70,60,0.4);color:#ff8f80}
+  .cart-line-del:active{transform:scale(0.9)}
 
   /* Confirm */
   .confirm-icon{width:60px;height:60px;margin:18px auto 14px;background:linear-gradient(135deg,rgba(74,222,128,0.15),rgba(74,222,128,0.05));border:1px solid rgba(74,222,128,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 26px rgba(74,222,128,0.12)}
@@ -886,6 +891,17 @@ function addDocena(catId){
   updateCartBadge();renderBottombar('menu');
 }
 
+function removeCartLine(key){
+  if(state.cart[key]){
+    delete state.cart[key];
+  }else{
+    const idx=state.comboCart.findIndex(c=>c.key===key);
+    if(idx>-1) state.comboCart.splice(idx,1);
+  }
+  goToCart();
+  renderBottombar('cart');
+}
+
 function allCartLines(){
   const regular=Object.entries(state.cart).map(([id,entry])=>{
     const item=findItem(id);
@@ -938,7 +954,12 @@ function goToCart(){
     :lines.map(l=>`<div class="cart-line">
       <div class="ic">${ic(l.catIcon,18)}</div>
       <div class="info"><strong>${l.qty}× ${l.name}</strong><span class="cat-tag">${l.catName}</span>${l.desc?`<span class="desc">📝 ${l.desc}</span>`:''}</div>
-      <div class="price">${fmt(l.price*l.qty)}</div>
+      <div class="cart-line-right">
+        <div class="price">${fmt(l.price*l.qty)}</div>
+        <button class="cart-line-del" onclick="removeCartLine('${l.key}')" aria-label="Quitar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        </button>
+      </div>
     </div>`).join('');
 
   const envioEl=document.getElementById('envioLine');
