@@ -194,7 +194,7 @@
   .stepper-sm button:active{transform:scale(0.9)}
   .stepper-sm .qty{font-family:var(--display);font-weight:700;font-size:12.5px;min-width:18px;text-align:center}
 
-  .note-link-sm{background:none;border:none;color:var(--text-muted);font-size:10.5px;text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;gap:3px;transition:color 0.2s;margin-top:4px}
+  .note-link-sm{background:none;border:none;color:var(--text);font-size:11px;text-decoration:underline;cursor:pointer;display:inline-flex;align-items:center;gap:3px;transition:color 0.2s;margin-top:4px}
   .note-link-sm:hover{color:var(--accent)}
   .note-chip-sm{display:inline-flex;align-items:center;gap:3px;margin-top:4px;font-size:10px;color:var(--accent-light);background:rgba(232,140,60,0.1);border:1px solid rgba(232,140,60,0.22);padding:2px 7px;border-radius:var(--radius-sm)}
   .note-input-sm{width:100%;margin-top:4px;background:rgba(0,0,0,0.3);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:7px 10px;color:var(--text);font-size:11.5px;font-family:var(--body);outline:none}
@@ -243,6 +243,7 @@
   .cart-line .info{flex:1}
   .cart-line strong{font-size:13px;display:block;font-weight:600;margin-bottom:1px}
   .cart-line .desc{font-size:11px;color:var(--text-secondary)}
+  .cart-line .cat-tag{display:block;font-size:10.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:2px}
   .cart-line .price{font-size:14px;font-family:var(--display);font-weight:700;color:var(--accent-light);white-space:nowrap}
 
   /* Confirm */
@@ -297,10 +298,10 @@
 <div class="screen" id="screen-selector">
   <div class="landing">
     <div class="landing-glow"></div>
-    <div class="logo-container" style="margin-bottom:16px;">
+    <div class="logo-container" style="width:260px;height:260px;margin-bottom:16px;">
       <div class="logo-ring"></div>
-      <img class="logo-img" id="logoImgSelector" alt="Nano Resto Bar" onload="this.style.display='block'" onerror="this.style.display='none'">
-      <svg class="logo-flame" viewBox="0 0 40 40" fill="none" stroke="url(#g1)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <img class="logo-img" id="logoImgSelector" alt="Nano Resto Bar" style="width:210px;height:210px;" onload="this.style.display='block';document.getElementById('logoFlameSelector').style.display='none'" onerror="this.style.display='none'">
+      <svg class="logo-flame" id="logoFlameSelector" viewBox="0 0 40 40" fill="none" stroke="url(#g1)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 4c2 5-2 6-2 10 0 2 1.5 3 3 3s3-1.5 3-3c3 2 5 6 5 10 0 6-4 11-9 11S9 30 9 24c0-4 2-7 4-9 0 2 1 3.5 3 3.5 3 0 3-3 2-6C17 9 18 6 20 4z"/>
       </svg>
     </div>
@@ -313,7 +314,7 @@
       </button>
       <button class="selector-opt" onclick="elegirCanal('envio')">
         <span class="selector-opt-icon">🛵</span>
-        <span class="selector-opt-text"><b>Envío a domicilio</b><small>Te lo llevamos hasta tu casa</small></span>
+        <span class="selector-opt-text"><b>Envío a domicilio</b><small id="envioCostoAviso">Te lo llevamos hasta tu casa</small></span>
       </button>
     </div>
     <div class="landing-note">¿Estás en una mesa del local? Escaneá el QR que está en tu mesa en vez de usar este link.</div>
@@ -359,6 +360,11 @@
   <div class="backrow"><button onclick="goTo('menu')">← seguir pidiendo</button></div>
   <h1 class="h2">Tu pedido</h1>
   <div id="cartList"></div>
+  <div id="envioLine" class="cart-line" style="display:none;">
+    <div class="ic">🛵</div>
+    <div class="info"><strong>Costo de envío</strong><span class="desc">Se suma al total del pedido</span></div>
+    <div class="price"></div>
+  </div>
 
   <div id="contactFields" style="display:none;margin-top:8px;">
     <div class="field-label">Tus datos</div>
@@ -432,6 +438,8 @@ const CONFIG = {
   // URL del Web App de Apps Script (Implementar > Nueva implementación > Aplicación web).
   // Mientras esté vacío, la app usa el menú de acá abajo (CATS/MENU) como demo offline.
   APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwZbKOiZmtimoOVp8dt5wAehccD1J-fQTLfGLk8oMf6AAdFkoN1_G3x7zGoQXFHMHqubg/exec',
+  // Costo fijo de envío a domicilio. Se suma al total solo cuando el canal es "envio".
+  COSTO_ENVIO: 1000,
 };
 
 // La mesa y el token llegan por la URL del QR: https://tu-sitio/?mesa=6&t=a91f3c2b
@@ -453,7 +461,7 @@ const CAT_IMAGES = {};
 
 let CATS=[
   {id:'pizzas',name:'Pizzas',icon:'pizza',half:true},
-  {id:'empanadas',name:'Empanadas',icon:'empanada'},
+  {id:'empanadas',name:'Empanadas',icon:'empanada',docena:true},
   {id:'entradas',name:'Entradas',icon:'queso'},
   {id:'ensaladas',name:'Ensaladas',icon:'ensalada'},
   {id:'guarniciones',name:'Guarniciones',icon:'papas'},
@@ -539,7 +547,7 @@ let MENU={
 // eso no vive en el Sheet, así que cuando lleguen los datos reales del Sheet los combinamos
 // con esto en vez de perderlos.
 const CATS_META = {};
-CATS.forEach(c => { CATS_META[c.id] = { icon: c.icon, half: c.half }; });
+CATS.forEach(c => { CATS_META[c.id] = { icon: c.icon, half: c.half, docena: c.docena }; });
 
 function fetchMenuFromSheet(){
   if(!CONFIG.APPS_SCRIPT_URL){
@@ -556,6 +564,7 @@ function fetchMenuFromSheet(){
         name: c.nombre,
         icon: (CATS_META[c.id] && CATS_META[c.id].icon) || 'plato',
         half: !!c.permite_mitad,
+        docena: !!c.vendido_por_docena,
       }));
 
       const newMenu = {};
@@ -706,6 +715,7 @@ function renderProducts(){
   const el=document.getElementById('productsList');el.innerHTML='';
   items.forEach(it=>el.appendChild(renderProductCard(it)));
   if(cat.half&&!isSearch)el.appendChild(renderHalfCard(cat));
+  if(cat.docena&&!isSearch)el.appendChild(renderDocenaCard(cat));
 }
 
 function renderProductCard(it){
@@ -734,12 +744,12 @@ function renderNoteArea(id,entry){
   const holder=document.getElementById('noteArea-'+id);if(!holder)return;
   if(entry.qty===0){holder.innerHTML='';return}
   if(entry.showInput){
-    holder.innerHTML=`<input class="note-input-sm" placeholder="Ej: sin cebolla..." value="${entry.note||''}" onblur="saveNote('${id}',this.value)">`;
+    holder.innerHTML=`<input class="note-input-sm" placeholder="Ej: sin cebolla, bien cocido..." value="${entry.note||''}" onblur="saveNote('${id}',this.value)">`;
     setTimeout(()=>{const inp=holder.querySelector('input');if(inp)inp.focus()},0);
   }else if(entry.note){
-    holder.innerHTML=`<span class="note-chip-sm">📝 ${entry.note}</span> <button class="note-link-sm" style="display:inline;" onclick="toggleNote('${id}')">editar</button>`;
+    holder.innerHTML=`<span class="note-chip-sm">📝 ${entry.note}</span> <button class="note-link-sm" style="display:inline;" onclick="toggleNote('${id}')">editar aclaración</button>`;
   }else{
-    holder.innerHTML=`<button class="note-link-sm" onclick="toggleNote('${id}')">＋ nota</button>`;
+    holder.innerHTML=`<button class="note-link-sm" onclick="toggleNote('${id}')">＋ agregar aclaración</button>`;
   }
 }
 function toggleNote(id){state.cart[id].showInput=true;renderNoteArea(id,state.cart[id])}
@@ -787,28 +797,112 @@ function addHalf(catId){
   const price=(a.price+b.price)/2;
   const existing=state.comboCart.find(c=>c.aId===a.id&&c.bId===b.id);
   if(existing)existing.qty+=1;
-  else state.comboCart.push({key:'combo-'+a.id+'-'+b.id,aId:a.id,bId:b.id,name:`Mitad ${a.name} / mitad ${b.name}`,price,qty:1,catIcon:CATS.find(c=>c.id===catId).icon});
+  else state.comboCart.push({key:'combo-'+a.id+'-'+b.id,aId:a.id,bId:b.id,name:`Mitad ${a.name} / mitad ${b.name}`,price,qty:1,catIcon:CATS.find(c=>c.id===catId).icon,catName:CATS.find(c=>c.id===catId).name});
+  updateCartBadge();renderBottombar('menu');
+}
+
+// ---------- Tarjeta de "por docena" (empanadas, sándwiches de miga, etc.) ----------
+// Los precios cargados en el Sheet son SIEMPRE el precio de la docena. Media docena
+// se calcula como la mitad. "Por unidad" no se maneja acá: si el local vende también
+// por unidad, esa es una fila de producto aparte en el Sheet (ej. "Empanada de carne —
+// unidad") y ya funciona sola con los steppers normales de la lista de arriba.
+let docenaState={};
+function renderDocenaCard(cat){
+  const opts=itemsOf(cat.id);
+  docenaState[cat.id]={tamano:'docena',mitad:false};
+  const card=document.createElement('div');
+  card.className='half-card';
+  card.id='docena-card-'+cat.id;
+  card.innerHTML=`<div class="htitle">${ic(cat.icon,16)} Armá tu pedido</div>
+    <div class="hsub">Los precios de la lista son por docena. Elegí el tamaño y, si querés, combiná dos sabores.</div>
+    <div class="pay-options" style="margin:0 0 10px;">
+      <button class="pay-opt active" id="docenaSize-docena-${cat.id}" onclick="setDocenaSize('${cat.id}','docena')">Docena</button>
+      <button class="pay-opt" id="docenaSize-media-${cat.id}" onclick="setDocenaSize('${cat.id}','media')">Media docena</button>
+    </div>
+    <div class="half-row">
+      <select id="docenaA-${cat.id}" onchange="updateDocenaPrice('${cat.id}')">${opts.map(o=>`<option value="${o.id}">${o.name}</option>`).join('')}</select>
+    </div>
+    <div class="pay-options" style="margin:0 0 10px;">
+      <button class="pay-opt" id="docenaMitad-off-${cat.id}" onclick="setDocenaMitad('${cat.id}',false)">Un solo sabor</button>
+      <button class="pay-opt" id="docenaMitad-on-${cat.id}" onclick="setDocenaMitad('${cat.id}',true)">Mitad y mitad</button>
+    </div>
+    <div class="half-row" id="docenaBWrap-${cat.id}" style="display:none;">
+      <select id="docenaB-${cat.id}" onchange="updateDocenaPrice('${cat.id}')">${opts.map((o,i)=>`<option value="${o.id}" ${i===1?'selected':''}>${o.name}</option>`).join('')}</select>
+    </div>
+    <div class="half-foot">
+      <span class="half-price" id="docenaPrice-${cat.id}">${fmt(opts[0].price)}</span>
+      <button class="half-add" onclick="addDocena('${cat.id}')">Agregar</button>
+    </div>`;
+  setActiveBtn('docenaSize-docena-'+cat.id,['docenaSize-docena-'+cat.id,'docenaSize-media-'+cat.id]);
+  setActiveBtn('docenaMitad-off-'+cat.id,['docenaMitad-off-'+cat.id,'docenaMitad-on-'+cat.id]);
+  return card;
+}
+function setActiveBtn(activeId,allIds){allIds.forEach(id=>document.getElementById(id)&&document.getElementById(id).classList.toggle('active',id===activeId))}
+function setDocenaSize(catId,tamano){
+  docenaState[catId].tamano=tamano;
+  setActiveBtn('docenaSize-'+tamano+'-'+catId,['docenaSize-docena-'+catId,'docenaSize-media-'+catId]);
+  updateDocenaPrice(catId);
+}
+function setDocenaMitad(catId,on){
+  docenaState[catId].mitad=on;
+  setActiveBtn('docenaMitad-'+(on?'on':'off')+'-'+catId,['docenaMitad-off-'+catId,'docenaMitad-on-'+catId]);
+  document.getElementById('docenaBWrap-'+catId).style.display=on?'flex':'none';
+  updateDocenaPrice(catId);
+}
+function updateDocenaPrice(catId){
+  const st=docenaState[catId];
+  const a=findItem(document.getElementById('docenaA-'+catId).value);
+  let base=a.price;
+  if(st.mitad){
+    const b=findItem(document.getElementById('docenaB-'+catId).value);
+    base=(a.price+b.price)/2;
+  }
+  const price=st.tamano==='media'?base/2:base;
+  document.getElementById('docenaPrice-'+catId).textContent=fmt(price);
+}
+function addDocena(catId){
+  const st=docenaState[catId];
+  const cat=CATS.find(c=>c.id===catId);
+  const a=findItem(document.getElementById('docenaA-'+catId).value);
+  let base=a.price,nombre=a.name;
+  if(st.mitad){
+    const b=findItem(document.getElementById('docenaB-'+catId).value);
+    if(a.id===b.id){alert('Elegí dos sabores distintos.');return}
+    base=(a.price+b.price)/2;
+    nombre=`Mitad ${a.name} / mitad ${b.name}`;
+  }
+  const esMedia=st.tamano==='media';
+  const price=esMedia?base/2:base;
+  const label=(esMedia?'Media docena de ':'Docena de ')+nombre;
+  const key='docena-'+catId+'-'+a.id+'-'+(st.mitad?document.getElementById('docenaB-'+catId).value:'')+'-'+st.tamano;
+  const bId=st.mitad?document.getElementById('docenaB-'+catId).value:'';
+  const existing=state.comboCart.find(c=>c.key===key);
+  if(existing)existing.qty+=1;
+  else state.comboCart.push({key,aId:a.id,bId,esMediaDocena:esMedia,name:label,price,qty:1,catIcon:cat.icon,catName:cat.name});
   updateCartBadge();renderBottombar('menu');
 }
 
 function allCartLines(){
   const regular=Object.entries(state.cart).map(([id,entry])=>{
     const item=findItem(id);
-    return{key:id,name:item.name,desc:entry.note||'',price:item.price,qty:entry.qty,catIcon:CATS.find(c=>c.id===item.catId).icon};
+    const cat=CATS.find(c=>c.id===item.catId);
+    return{key:id,name:item.name,desc:entry.note||'',price:item.price,qty:entry.qty,catIcon:cat.icon,catName:cat.name};
   });
   return[...regular,...state.comboCart];
 }
 function cartTotal(lines){return lines.reduce((s,l)=>s+l.price*l.qty,0)}
+function costoEnvio(){return state.canal==='envio'?CONFIG.COSTO_ENVIO:0}
+function totalConEnvio(lines){return cartTotal(lines)+costoEnvio()}
 
 function renderBottombar(screen){
   const bar=document.getElementById('bottombar');
   if(screen==='menu'){
-    const lines=allCartLines();const total=cartTotal(lines);const count=lines.reduce((s,l)=>s+l.qty,0);
+    const lines=allCartLines();const total=totalConEnvio(lines);const count=lines.reduce((s,l)=>s+l.qty,0);
     if(count===0){bar.style.display='none';return}
     bar.style.display='flex';
     bar.innerHTML=`<div class="total">${count} ítem${count>1?'s':''}<b>${fmt(total)}</b></div><button class="cta" onclick="goToCart()">Ver pedido →</button>`;
   }else if(screen==='cart'){
-    const lines=allCartLines();const total=cartTotal(lines);
+    const lines=allCartLines();const total=totalConEnvio(lines);
     const esMesa=state.canal==='mesa';
     const listo=lines.length>0 && (esMesa || datosContactoCompletos());
     bar.style.display='flex';
@@ -839,9 +933,17 @@ function goToCart(){
   el.innerHTML=lines.length===0?'<div class="empty-cart">Todavía no agregaste nada</div>'
     :lines.map(l=>`<div class="cart-line">
       <div class="ic">${ic(l.catIcon,18)}</div>
-      <div class="info"><strong>${l.qty}× ${l.name}</strong>${l.desc?`<span class="desc">📝 ${l.desc}</span>`:''}</div>
+      <div class="info"><strong>${l.qty}× ${l.name}</strong><span class="cat-tag">${l.catName}</span>${l.desc?`<span class="desc">📝 ${l.desc}</span>`:''}</div>
       <div class="price">${fmt(l.price*l.qty)}</div>
     </div>`).join('');
+
+  const envioEl=document.getElementById('envioLine');
+  if(state.canal==='envio' && lines.length>0){
+    envioEl.style.display='flex';
+    envioEl.querySelector('.price').textContent=fmt(costoEnvio());
+  } else {
+    envioEl.style.display='none';
+  }
 
   const esMesa=state.canal==='mesa';
   document.getElementById('contactFields').style.display=esMesa?'none':'block';
@@ -859,10 +961,10 @@ function goToCart(){
 
 function buildItemsForApi(lines){
   return lines.map(l=>{
-    if(l.aId&&l.bId){
-      return{producto_id:l.aId,cantidad:l.qty,nota:'',es_mitad_y_mitad:true,combinado_con:l.bId};
+    if(l.aId){
+      return{producto_id:l.aId,cantidad:l.qty,nota:'',es_mitad_y_mitad:!!l.bId,combinado_con:l.bId||'',es_media_docena:!!l.esMediaDocena};
     }
-    return{producto_id:l.key,cantidad:l.qty,nota:l.desc||'',es_mitad_y_mitad:false,combinado_con:''};
+    return{producto_id:l.key,cantidad:l.qty,nota:l.desc||'',es_mitad_y_mitad:false,combinado_con:'',es_media_docena:false};
   });
 }
 
@@ -936,6 +1038,7 @@ function confirmarPedido(){
     telefono:state.telefono,
     direccion:state.direccion,
     metodo_pago:state.metodoPago,
+    costo_envio:costoEnvio(),
     items:buildItemsForApi(lines),
   }).then(data=>{
     if(!data.ok){
@@ -974,7 +1077,7 @@ function confirmarCodigo(){
 }
 
 function mostrarPedidoConfirmado(){
-  const lines=allCartLines();const total=cartTotal(lines);
+  const lines=allCartLines();const total=totalConEnvio(lines);
   const esEnvio=state.canal==='envio';
   document.getElementById('confirmTitle').textContent='¡Pedido confirmado!';
   document.getElementById('ticketBox').innerHTML=`
@@ -983,6 +1086,7 @@ function mostrarPedidoConfirmado(){
     ${esEnvio?`<div class="row"><span>DIRECCIÓN</span><span>${state.direccion}</span></div>`:''}
     <div class="row"><span>PAGO</span><span>${state.metodoPago==='efectivo'?'Efectivo al recibir':'Transferencia'}</span></div><hr>
     ${lines.map(l=>`<div class="row"><span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
+    ${esEnvio?`<div class="row"><span>Costo de envío</span><span>${fmt(costoEnvio())}</span></div>`:''}
     <hr><div class="row tot"><span>TOTAL</span><span>${fmt(total)}</span></div>
     <div class="status-line">Verificado por WhatsApp ✓ · Te avisamos por ese mismo número cuando ${esEnvio?'salga en camino':'esté listo para retirar'}.</div>`;
   document.getElementById('confirmActions').innerHTML=`<button class="cta ghost" onclick="resetDemo()">Volver al inicio</button>`;
@@ -1001,6 +1105,7 @@ function resetDemo(){
 document.getElementById('mesaNum').textContent = state.mesa;
 document.getElementById('logoImg').src = CONFIG.LOGO_URL;
 document.getElementById('logoImgSelector').src = CONFIG.LOGO_URL;
+document.getElementById('envioCostoAviso').textContent = `Te lo llevamos hasta tu casa · +${fmt(CONFIG.COSTO_ENVIO)} de envío`;
 if(state.canal) fetchMenuFromSheet();
 validarMesaAlCargar();
 
