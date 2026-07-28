@@ -230,6 +230,7 @@
   .ticket-box{background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:var(--radius-lg);padding:22px;font-size:13px;margin:0 18px;box-shadow:var(--shadow-sm)}
   .ticket-box .row{display:flex;justify-content:space-between;padding:6px 0;gap:10px;align-items:flex-start}
   .ticket-box .row .note{display:block;font-size:10.5px;color:var(--accent-light);margin-top:1px;opacity:0.8}
+  .ticket-box .row .row-cat{display:block;font-size:9.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:1px}
   .ticket-box hr{border:none;border-top:1px dashed var(--glass-border);margin:10px 0}
   .ticket-box .tot{font-weight:700;font-size:15px;font-family:var(--display);color:var(--accent-light)}
   .status-line{margin-top:14px;font-size:11.5px;color:var(--text-secondary);line-height:1.55;border-top:1px dashed var(--glass-border);padding-top:12px}
@@ -982,7 +983,7 @@ function sendRound(){
   document.getElementById('ticketBox').innerHTML=`<div class="row"><span>${canalLabel().etiqueta}</span><span>${canalLabel().valor}</span></div>
     <div class="row"><span>RONDA</span><span>#${state.cuenta.length}</span></div>
     <div class="row"><span>HORA</span><span>${time}</span></div><hr>
-    ${lines.map(l=>`<div class="row"><span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
+    ${lines.map(l=>`<div class="row"><span><span class="row-cat">${l.catName}</span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
     <hr><div class="row tot"><span>TOTAL CUENTA</span><span>${fmt(cuentaTotal)}</span></div>
     <div class="status-line">El mozo ve esta ronda al instante en el panel del local.</div>`;
   document.getElementById('confirmActions').innerHTML=`<button class="cta" onclick="backToMenu()">Pedir algo más</button><button class="cta ghost" onclick="askBill()">Pedir la cuenta</button>`;
@@ -1085,7 +1086,7 @@ function mostrarPedidoConfirmado(){
     <div class="row"><span>TEL</span><span>${state.telefono}</span></div>
     ${esEnvio?`<div class="row"><span>DIRECCIÓN</span><span>${state.direccion}</span></div>`:''}
     <div class="row"><span>PAGO</span><span>${state.metodoPago==='efectivo'?'Efectivo al recibir':'Transferencia'}</span></div><hr>
-    ${lines.map(l=>`<div class="row"><span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
+    ${lines.map(l=>`<div class="row"><span><span class="row-cat">${l.catName}</span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
     ${esEnvio?`<div class="row"><span>Costo de envío</span><span>${fmt(costoEnvio())}</span></div>`:''}
     <hr><div class="row tot"><span>TOTAL</span><span>${fmt(total)}</span></div>
     <div class="status-line">Verificado por WhatsApp ✓ · Te avisamos por ese mismo número cuando ${esEnvio?'salga en camino':'esté listo para retirar'}.</div>`;
@@ -1105,7 +1106,7 @@ function resetDemo(){
 document.getElementById('mesaNum').textContent = state.mesa;
 document.getElementById('logoImg').src = CONFIG.LOGO_URL;
 document.getElementById('logoImgSelector').src = CONFIG.LOGO_URL;
-document.getElementById('envioCostoAviso').textContent = `Te lo llevamos hasta tu casa`;
+document.getElementById('envioCostoAviso').textContent = `Te lo llevamos hasta tu casa · +${fmt(CONFIG.COSTO_ENVIO)} de envío`;
 if(state.canal) fetchMenuFromSheet();
 validarMesaAlCargar();
 
