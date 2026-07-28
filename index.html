@@ -71,21 +71,21 @@
   .landing-note{margin-top:18px;font-size:12px;color:var(--text-secondary);max-width:260px;line-height:1.6;text-shadow:0 2px 8px rgba(0,0,0,0.6);
     opacity:0;animation:textIn 0.7s cubic-bezier(0.16,1,0.3,1) 1.2s forwards}
   .error-title{font-family:var(--display);font-weight:700;font-size:22px;color:var(--text);text-shadow:0 2px 10px rgba(0,0,0,0.6)}
-  .field-label{font-family:var(--display);font-size:12px;font-weight:600;color:var(--text-secondary);margin:0 18px 8px;text-transform:uppercase;letter-spacing:0.04em}
+  .field-label{font-family:var(--display);font-size:12px;font-weight:600;color:rgba(255,255,255,0.75);margin:0 18px 8px;text-transform:uppercase;letter-spacing:0.04em;text-shadow:0 1px 4px rgba(0,0,0,0.5)}
   .field-input{
     display:block;width:calc(100% - 36px);margin:0 18px 10px;padding:13px 15px;border-radius:var(--radius-md);
-    background:var(--glass);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border:1px solid var(--glass-border);
+    background:rgba(20,15,12,0.5);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border:1px solid var(--glass-border);
     color:var(--text);font-family:var(--body);font-size:13.5px;outline:none;transition:var(--transition);box-shadow:var(--shadow-sm);
   }
   .field-input:focus{border-color:rgba(221,147,80,0.5)}
-  .field-input::placeholder{color:var(--text-secondary)}
+  .field-input::placeholder{color:rgba(255,255,255,0.5)}
   .codigo-input{width:calc(100% - 0px);max-width:220px;margin:0 auto}
   .pay-options{display:flex;gap:10px;margin:0 18px}
   .pay-opt{
-    flex:1;padding:12px;border-radius:var(--radius-md);background:var(--glass);border:1px solid var(--glass-border);
-    color:var(--text-secondary);font-family:var(--body);font-size:12.5px;font-weight:500;cursor:pointer;transition:var(--transition);
+    flex:1;padding:12px;border-radius:var(--radius-md);background:rgba(20,15,12,0.5);border:1px solid var(--glass-border);
+    color:rgba(255,255,255,0.78);font-family:var(--body);font-size:12.5px;font-weight:500;cursor:pointer;transition:var(--transition);
   }
-  .pay-opt.active{border-color:var(--accent);color:var(--text);background:rgba(221,147,80,0.12)}
+  .pay-opt.active{border-color:var(--accent);color:var(--text);background:rgba(221,147,80,0.18)}
   .cart-error{margin:14px 18px 0;padding:10px 14px;border-radius:var(--radius-md);background:rgba(220,70,60,0.12);border:1px solid rgba(220,70,60,0.3);color:#ff9b8f;font-size:12px}
   .selector-options{display:flex;flex-direction:column;gap:12px;width:100%;margin-top:30px}
   .selector-opt{
@@ -227,7 +227,7 @@
 
   /* Cart Screen */
   .backrow{display:flex;justify-content:space-between;align-items:center;padding:18px 18px 8px}
-  .backrow button{background:none;border:none;font-size:13px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:6px;transition:color 0.2s;font-family:var(--body)}
+  .backrow button{background:none;border:none;font-size:13px;color:rgba(255,255,255,0.82);cursor:pointer;display:flex;align-items:center;gap:6px;transition:color 0.2s;font-family:var(--body);text-shadow:0 1px 4px rgba(0,0,0,0.5)}
   .backrow button:hover{color:var(--accent)}
   h1.h2{font-family:var(--display);font-weight:700;font-size:22px;margin:0 18px 18px;letter-spacing:-0.02em;text-shadow:0 2px 10px rgba(0,0,0,0.6)}
   .ticket-box{background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border-radius:var(--radius-lg);padding:22px;font-size:13px;margin:0 18px;box-shadow:var(--shadow-sm)}
@@ -245,12 +245,12 @@
   .cart-line .ic{width:36px;height:36px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--glass-border)}
   .cart-line .ic svg{width:18px;height:18px;color:var(--accent-light)}
   .cart-line .info{flex:1}
-  .cart-line strong{font-size:13px;display:block;font-weight:600;margin-bottom:1px}
-  .cart-line .desc{font-size:11px;color:var(--text-secondary)}
-  .cart-line .cat-tag{display:block;font-size:10.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:2px}
+  .cart-line strong{font-size:13px;display:block;font-weight:600;margin-bottom:1px;text-shadow:0 1px 4px rgba(0,0,0,0.5)}
+  .cart-line .desc{font-size:11px;color:rgba(255,255,255,0.72);text-shadow:0 1px 4px rgba(0,0,0,0.5)}
+  .cart-line .cat-tag{display:block;font-size:10.5px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:2px;text-shadow:0 1px 4px rgba(0,0,0,0.5)}
   .cart-line .price{font-size:14px;font-family:var(--display);font-weight:700;color:var(--accent-light);white-space:nowrap}
   .cart-line-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
-  .cart-line-del{width:26px;height:26px;border-radius:50%;border:1px solid var(--glass-border);background:var(--surface);color:var(--text-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition);flex-shrink:0}
+  .cart-line-del{width:26px;height:26px;border-radius:50%;border:1px solid var(--glass-border);background:rgba(20,15,12,0.5);color:rgba(255,255,255,0.7);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition);flex-shrink:0}
   .cart-line-del svg{width:13px;height:13px}
   .cart-line-del:hover{background:rgba(220,70,60,0.16);border-color:rgba(220,70,60,0.4);color:#ff8f80}
   .cart-line-del:active{transform:scale(0.9)}
@@ -366,7 +366,7 @@
 </div>
 
 <div class="screen" id="screen-cart">
-  <div class="backrow"><button onclick="goTo('menu')">← seguir pidiendo</button></div>
+  <div class="backrow"><button onclick="backToMenu()">← seguir pidiendo</button></div>
   <h1 class="h2">Tu pedido</h1>
   <div id="cartList"></div>
   <div id="envioLine" class="cart-line" style="display:none;">
