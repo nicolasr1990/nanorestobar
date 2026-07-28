@@ -20,7 +20,8 @@
     --transition:all 0.35s cubic-bezier(0.4,0,0.2,1);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-  html,body{margin:0;background:#060607;font-family:var(--body);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  html{background:#060607}
+  body{margin:0;background:transparent;font-family:var(--body);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
   .wrap{max-width:430px;margin:0 auto;position:relative;min-height:100vh}
   /* Fondo fijo (no se mueve con el scroll): la foto real que el glassmorphism va a desenfocar detrás de cada tarjeta */
   body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
