@@ -953,7 +953,7 @@ function goToCart(){
   el.innerHTML=lines.length===0?'<div class="empty-cart">Todavía no agregaste nada</div>'
     :lines.map(l=>`<div class="cart-line">
       <div class="ic">${ic(l.catIcon,18)}</div>
-      <div class="info"><strong>${l.qty}× ${l.name}</strong><span class="cat-tag">${l.catName}</span>${l.desc?`<span class="desc">📝 ${l.desc}</span>`:''}</div>
+      <div class="info"><span class="cat-tag">${l.catName}</span><strong>${l.qty}× ${l.name}</strong>${l.desc?`<span class="desc">📝 ${l.desc}</span>`:''}</div>
       <div class="cart-line-right">
         <div class="price">${fmt(l.price*l.qty)}</div>
         <button class="cart-line-del" onclick="removeCartLine('${l.key}')" aria-label="Quitar">
