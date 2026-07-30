@@ -1163,7 +1163,20 @@ function validarMesaAlCargar(){
         document.getElementById('screen-mesa-invalida').classList.add('active');
         return;
       }
+
+      // Si esta pestaña ya había guardado una sesión de esta mesa antes (por ej. venís de
+      // refrescar) y la sesión del servidor cambió, significa que la mesa se cerró y volvió
+      // a abrirse mientras tanto — no la dejamos seguir pidiendo con la sesión vieja.
+      const storageKey='nano_sesion_mesa_'+MESA_URL;
+      const sesionGuardada=sessionStorage.getItem(storageKey);
+      if(sesionGuardada && sesionGuardada!==data.sesion){
+        document.querySelectorAll('#app .screen').forEach(s=>s.classList.remove('active'));
+        document.getElementById('screen-mesa-invalida').classList.add('active');
+        return;
+      }
+
       state.sesion=data.sesion;
+      sessionStorage.setItem(storageKey,data.sesion);
     })
     .catch(err=>console.warn('No se pudo validar la mesa contra el Sheet, se sigue en modo demo.', err));
 }
