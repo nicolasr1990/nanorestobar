@@ -1000,7 +1000,8 @@ function postToSheet(body){
 function sendRound(){
   const lines=allCartLines();const total=cartTotal(lines);
   const time=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false});
-  state.cuenta.push({lines,total,time});
+  const rondaLocal={lines,total,time};
+  state.cuenta.push(rondaLocal);
   state.cart={};state.comboCart=[];
   const cuentaTotal=state.cuenta.reduce((s,r)=>s+r.total,0);
   document.getElementById('confirmTitle').textContent='Ronda enviada a cocina';
@@ -1014,7 +1015,15 @@ function sendRound(){
   goTo('confirm');
 
   if(CONFIG.APPS_SCRIPT_URL){
-    postToSheet({action:'crearPedido',tipo:'mesa',mesa:state.mesa,token:state.token,items:buildItemsForApi(lines)})
+    postToSheet({action:'crearPedido',tipo:'mesa',mesa:state.mesa,token:state.token,sesion:state.sesion,items:buildItemsForApi(lines)})
+      .then(data=>{
+        if(!data.ok){
+          const idx=state.cuenta.indexOf(rondaLocal);
+          if(idx>-1)state.cuenta.splice(idx,1);
+          document.querySelectorAll('#app .screen').forEach(s=>s.classList.remove('active'));
+          document.getElementById('screen-mesa-invalida').classList.add('active');
+        }
+      })
       .catch(err=>console.warn('No se pudo guardar la ronda en el Sheet (el mozo la sigue viendo local en esta demo).',err));
   }
 }
@@ -1121,7 +1130,7 @@ function mostrarPedidoConfirmado(){
 
 function resetDemo(){
   const canal = state.canal;
-  state={cat:'pizzas',cart:{},comboCart:[],cuenta:[],mesa:state.mesa,token:state.token,canal,metodoPago:null};
+  state={cat:'pizzas',cart:{},comboCart:[],cuenta:[],mesa:state.mesa,token:state.token,sesion:state.sesion,canal,metodoPago:null};
   document.getElementById('searchInput').value='';
   goTo(canal === 'mesa' ? 'landing' : 'selector');
 }
@@ -1152,7 +1161,9 @@ function validarMesaAlCargar(){
       if(!data.valida){
         document.querySelectorAll('#app .screen').forEach(s=>s.classList.remove('active'));
         document.getElementById('screen-mesa-invalida').classList.add('active');
+        return;
       }
+      state.sesion=data.sesion;
     })
     .catch(err=>console.warn('No se pudo validar la mesa contra el Sheet, se sigue en modo demo.', err));
 }
