@@ -203,6 +203,22 @@
   .note-input-sm{width:100%;margin-top:4px;background:rgba(0,0,0,0.3);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:7px 10px;color:var(--text);font-size:11.5px;font-family:var(--body);outline:none}
   .note-input-sm:focus{border-color:var(--accent)}
 
+  .video-link{
+    display:inline-flex;align-items:center;gap:5px;margin:4px 0 2px;padding:5px 11px;
+    background:rgba(221,147,80,0.12);border:1px solid rgba(221,147,80,0.3);border-radius:var(--radius-sm);
+    color:var(--accent-light);font-size:11px;font-weight:600;font-family:var(--body);cursor:pointer;
+  }
+  .video-link:hover{background:rgba(221,147,80,0.2)}
+  .video-overlay{
+    position:fixed;inset:0;z-index:100;background:rgba(5,4,4,0.92);backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;padding:24px;
+  }
+  .video-overlay.show{display:flex}
+  .video-box{width:100%;max-width:400px}
+  .video-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;color:var(--text);font-family:var(--display);font-weight:600;font-size:14px}
+  .video-close{background:var(--surface);border:1px solid var(--glass-border);color:var(--text);width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer}
+  #videoPlayer{width:100%;border-radius:var(--radius-md);display:block;background:#000;box-shadow:var(--shadow-md)}
+
   /* Bottom Bar */
   .bottombar{
     position:fixed;left:0;right:0;bottom:0;max-width:430px;margin:0 auto;
@@ -420,6 +436,16 @@
 <div class="bottombar" id="bottombar" style="display:none;"></div>
 </div></div>
 
+<div class="video-overlay" id="videoOverlay">
+  <div class="video-box">
+    <div class="video-head">
+      <span id="videoTitle"></span>
+      <button class="video-close" onclick="cerrarVideo()">✕</button>
+    </div>
+    <video id="videoPlayer" playsinline controls loop preload="none"></video>
+  </div>
+</div>
+
 <script>
 const ICONS={
   postre:'<path d="M10 30V16c0-4.5 4.5-8 10-8s10 3.5 10 8v14z"/><path d="M10 30h20"/><path d="M13 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>',
@@ -516,7 +542,7 @@ let MENU={
     {id:'mi3',name:'Suprema de pollo',desc:'Pechuga empanada y frita',price:8600},
   ],
   hamburguesas:[
-    {id:'ha1',name:'Clásica',desc:'Cheddar, panceta y cebolla crocante',price:7400},
+    {id:'ha1',name:'Clásica',desc:'Cheddar, panceta y cebolla crocante',price:7400,video:'hambur_completa.mp4'},
     {id:'ha2',name:'Doble',desc:'Doble carne smash y doble queso',price:9200},
     {id:'ha3',name:'Veggie',desc:'Medallón de garbanzos y especias',price:7000},
   ],
@@ -733,6 +759,7 @@ function renderProductCard(it){
   card.innerHTML=`<div class="product-info">
     <strong>${it.name}</strong>
     <div class="desc">${it.desc||''}</div>
+    ${it.video?`<button class="video-link" onclick="verVideo('${it.video}','${it.name}')">▶ Ver video</button>`:''}
     <div class="price">${fmt(it.price)}</div>
     <div id="noteArea-${it.id}"></div>
   </div>
@@ -741,6 +768,25 @@ function renderProductCard(it){
   </div>`;
   setTimeout(()=>{renderStepper(it.id,entry.qty);renderNoteArea(it.id,entry)},0);
   return card;
+}
+
+// El <video> no existe en el HTML hasta que se toca "Ver video" — así no se descarga
+// nada de nadie hasta que lo pidan a propósito.
+function verVideo(src,nombre){
+  const overlay=document.getElementById('videoOverlay');
+  const video=document.getElementById('videoPlayer');
+  document.getElementById('videoTitle').textContent=nombre;
+  video.src=src;
+  overlay.classList.add('show');
+  video.play().catch(()=>{});
+}
+function cerrarVideo(){
+  const overlay=document.getElementById('videoOverlay');
+  const video=document.getElementById('videoPlayer');
+  video.pause();
+  video.removeAttribute('src');
+  video.load(); // libera el archivo de memoria, no se queda cacheado corriendo de fondo
+  overlay.classList.remove('show');
 }
 
 function renderStepper(id,qty){
