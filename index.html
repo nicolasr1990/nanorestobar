@@ -412,6 +412,11 @@
       <button class="pay-opt" id="payEfectivo" onclick="elegirPago('efectivo')">Efectivo</button>
       <button class="pay-opt" id="payTransferencia" onclick="elegirPago('transferencia')">Transferencia</button>
     </div>
+    <div id="comprobanteWrap" style="display:none;margin-top:10px;">
+      <div class="field-label">Comprobante de la transferencia</div>
+      <input type="file" id="comprobanteInput" accept="image/*,application/pdf" class="field-input" style="padding:11px 12px;" onchange="handleComprobanteChange(this)">
+      <div id="comprobantePreview" style="font-size:11.5px;color:var(--text-secondary);margin:2px 18px 0;"></div>
+    </div>
   </div>
 
   <div id="cartError" class="cart-error" style="display:none;"></div>
@@ -1037,6 +1042,9 @@ function datosContactoCompletos(){
   if(!nombre||!telefono)return false;
   if(state.canal==='envio'&&!direccion)return false;
   if(!state.metodoPago)return false;
+  // El dueño pidió que la transferencia siempre venga con comprobante adjunto — así se
+  // puede verificar el pago sin tener que confiar a ciegas en un pedido que llega solo.
+  if(state.metodoPago==='transferencia'&&!state.comprobante)return false;
   return true;
 }
 
@@ -1044,7 +1052,72 @@ function elegirPago(metodo){
   state.metodoPago=metodo;
   document.getElementById('payEfectivo').classList.toggle('active',metodo==='efectivo');
   document.getElementById('payTransferencia').classList.toggle('active',metodo==='transferencia');
+  document.getElementById('comprobanteWrap').style.display=metodo==='transferencia'?'block':'none';
+  if(metodo!=='transferencia'){
+    state.comprobante=null;
+    document.getElementById('comprobanteInput').value='';
+    document.getElementById('comprobantePreview').textContent='';
+  }
   renderBottombar('cart');
+}
+
+// Una foto de comprobante sacada con el celular puede pesar varios MB sin necesidad —
+// la achicamos antes de mandarla. No se toca si es PDF.
+function comprimirImagenComprobante(file){
+  return new Promise((resolve, reject) => {
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      const MAX=1600;
+      let {width,height}=img;
+      if(width>MAX||height>MAX){
+        const ratio=Math.min(MAX/width,MAX/height);
+        width=Math.round(width*ratio);height=Math.round(height*ratio);
+      }
+      const canvas=document.createElement('canvas');
+      canvas.width=width;canvas.height=height;
+      canvas.getContext('2d').drawImage(img,0,0,width,height);
+      canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('sin_blob')),'image/jpeg',0.75);
+    };
+    img.onerror=reject;
+    img.src=url;
+  });
+}
+
+function handleComprobanteChange(input){
+  const file=input.files[0];
+  const previewEl=document.getElementById('comprobantePreview');
+  if(!file){ state.comprobante=null; previewEl.textContent=''; renderBottombar('cart'); return; }
+
+  const esPdf=file.type==='application/pdf';
+  const esImagen=file.type.startsWith('image/');
+  if(!esPdf&&!esImagen){
+    previewEl.textContent='Subí una foto o un PDF.';
+    input.value='';state.comprobante=null;renderBottombar('cart');return;
+  }
+  if(file.size>15*1024*1024){
+    previewEl.textContent='El archivo es muy pesado (máx. 15MB).';
+    input.value='';state.comprobante=null;renderBottombar('cart');return;
+  }
+
+  previewEl.textContent='Cargando...';
+  const guardar=(tipo,base64,nombre)=>{
+    state.comprobante={nombre,tipo,contenido:base64};
+    previewEl.textContent='✓ '+nombre;
+    renderBottombar('cart');
+  };
+  const leerComoBase64=blob=>{
+    const reader=new FileReader();
+    reader.onload=()=>guardar(blob.type||file.type,reader.result.split(',')[1],file.name);
+    reader.readAsDataURL(blob);
+  };
+
+  if(esImagen){
+    comprimirImagenComprobante(file).then(leerComoBase64).catch(()=>leerComoBase64(file));
+  } else {
+    leerComoBase64(file);
+  }
 }
 
 function goToCart(){
@@ -1174,6 +1247,7 @@ function confirmarPedido(){
     metodo_pago:state.metodoPago,
     costo_envio:costoEnvio(),
     items:buildItemsForApi(lines),
+    comprobante:state.metodoPago==='transferencia'?state.comprobante:undefined,
   }).then(data=>{
     if(!data.ok){
       errEl.textContent='No pudimos enviar el pedido. Probá de nuevo en un momento.';
