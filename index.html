@@ -474,7 +474,9 @@ const ICONS={
   pasta:'<path d="M7 19c0 7.5 5.5 12 13 12s13-4.5 13-12"/><path d="M5.5 19h29"/><path d="M16 11c-2-2 .3-4-1.5-6.3M23 9.5c-2-2 .3-4-1.5-6.3"/>',
   milanesa:'<ellipse cx="20" cy="21" rx="13" ry="8"/><circle cx="14" cy="18" r=".9"/><circle cx="19" cy="16" r=".9"/><circle cx="25" cy="18" r=".9"/><circle cx="16" cy="23" r=".9"/><circle cx="22" cy="24" r=".9"/><circle cx="27" cy="22" r=".9"/>',
   hamburguesa:'<path d="M8 18c0-5 5.5-9 12-9s12 4 12 9"/><rect x="7" y="18" width="26" height="3" rx="1.5"/><rect x="7" y="23" width="26" height="3" rx="1.5"/><path d="M8 28c0 2.5 5.5 4.5 12 4.5s12-2 12-4.5"/>',
-  cerveza:'<path d="M9.5 12h14.5v18.5c0 2.2-2.2 4-4.9 4h-4.7c-2.7 0-4.9-1.8-4.9-4V12z"/><path d="M24 16.5h4.2c2.1 0 3.3 1.2 3.3 3.2v3.6c0 2-1.2 3.2-3.3 3.2H24"/><path d="M9.5 12c0-2.3 1.4-4.3 3.5-4.3h7.5c2.1 0 3.5 2 3.5 4.3"/>'
+  cerveza:'<path d="M9.5 12h14.5v18.5c0 2.2-2.2 4-4.9 4h-4.7c-2.7 0-4.9-1.8-4.9-4V12z"/><path d="M24 16.5h4.2c2.1 0 3.3 1.2 3.3 3.2v3.6c0 2-1.2 3.2-3.3 3.2H24"/><path d="M9.5 12c0-2.3 1.4-4.3 3.5-4.3h7.5c2.1 0 3.5 2 3.5 4.3"/>',
+  gaseosa:'<path d="M11 12h18l-2.2 19.5a2 2 0 01-2 1.8H15.2a2 2 0 01-2-1.8L11 12z"/><line x1="10" y1="12" x2="30" y2="12"/><line x1="25" y1="8.5" x2="29" y2="16.5"/><line x1="14" y1="19" x2="26" y2="19"/>',
+  vino:'<path d="M13 6h14l-1 8.5c-.8 5-4.3 8-6 8s-5.2-3-6-8L13 6z"/><line x1="20" y1="22.5" x2="20" y2="31"/><line x1="14" y1="34" x2="26" y2="34"/>'
 };
 function ic(key,size=40){return `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="width:${size}px;height:${size}px">${ICONS[key]||ICONS.plato}</svg>`}
 
@@ -508,8 +510,9 @@ const CARTA_URL = URL_PARAMS.get('carta');
 // Ej: /img/pizzas.jpg, /img/empanadas.jpg, etc. Mientras no subas el archivo, se muestra
 // automáticamente el ícono de la categoría en vez de la foto (no queda roto).
 const CAT_IMAGES = {};
-['pizzas','empanadas','entradas','ensaladas','guarniciones','milanesas','hamburguesas',
- 'lomitos','miga','pastas','elaborados','postres','bebidas'].forEach(id=>{
+['pizzas','empanadas','entradas','ensaladas','milanesas','hamburguesas',
+ 'lomitos','miga','pastas','elaborados','postres','bebidas_sin_alcohol',
+ 'cervezas','vinos_espumantes'].forEach(id=>{
   CAT_IMAGES[id] = `${id}.jpg`;
 });
 
@@ -518,7 +521,6 @@ let CATS=[
   {id:'empanadas',name:'Empanadas',icon:'empanada',docena:true},
   {id:'entradas',name:'Entradas',icon:'queso'},
   {id:'ensaladas',name:'Ensaladas',icon:'ensalada'},
-  {id:'guarniciones',name:'Guarniciones',icon:'papas'},
   {id:'milanesas',name:'Milanesas',icon:'milanesa'},
   {id:'hamburguesas',name:'Hamburguesas',icon:'hamburguesa'},
   {id:'lomitos',name:'Lomitos',icon:'lomito'},
@@ -526,7 +528,9 @@ let CATS=[
   {id:'pastas',name:'Pastas',icon:'pasta'},
   {id:'elaborados',name:'Platos Elaborados',icon:'plato'},
   {id:'postres',name:'Postres',icon:'postre'},
-  {id:'bebidas',name:'Bebidas',icon:'cerveza'},
+  {id:'bebidas_sin_alcohol',name:'Bebidas sin Alcohol',icon:'gaseosa'},
+  {id:'cervezas',name:'Cervezas',icon:'cerveza'},
+  {id:'vinos_espumantes',name:'Vinos y Espumantes',icon:'vino'},
 ];
 
 let MENU={
@@ -549,11 +553,6 @@ let MENU={
     {id:'es1',name:'Caprese',desc:'Tomate, muzzarella de búfala y albahaca',price:6400},
     {id:'es2',name:'César con pollo',desc:'Pollo grillado y aderezo casero',price:7800},
     {id:'es3',name:'Mixta',desc:'Lechuga, tomate, zanahoria y huevo',price:4900},
-  ],
-  guarniciones:[
-    {id:'gu1',name:'Papas fritas',desc:'Crocantes y doradas',price:3200},
-    {id:'gu2',name:'Puré de papas',desc:'Con manteca y nuez moscada',price:3000},
-    {id:'gu3',name:'Ensalada rusa',desc:'Clásica con mayonesa casera',price:3200},
   ],
   milanesas:[
     {id:'mi1',name:'Napolitana',desc:'Con salsa, jamón y papas fritas',price:9800},
@@ -590,10 +589,16 @@ let MENU={
     {id:'po2',name:'Volcán de chocolate',desc:'Con helado de vainilla',price:4200},
     {id:'po3',name:'Ensalada de frutas',desc:'Frutas de estación',price:3200},
   ],
-  bebidas:[
+  bebidas_sin_alcohol:[
     {id:'be1',name:'Gaseosa Coca-Cola',desc:'500ml línea Coca-Cola',price:2200},
-    {id:'be2',name:'Cerveza artesanal',desc:'Pinta de 500ml IPA o rubia',price:3400},
     {id:'be3',name:'Agua con/sin gas',desc:'500ml mineral',price:1500},
+  ],
+  cervezas:[
+    {id:'be2',name:'Cerveza artesanal',desc:'Pinta de 500ml IPA o rubia',price:3400},
+  ],
+  vinos_espumantes:[
+    {id:'vi1',name:'Vino tinto de la casa',desc:'Copa 250ml',price:3800},
+    {id:'vi2',name:'Espumante',desc:'Copa 200ml',price:4200},
   ],
 };
 
