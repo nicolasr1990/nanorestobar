@@ -674,6 +674,11 @@ function fetchMenuFromSheet(){
 
 let state={cat:'pizzas',cart:{},comboCart:[],cuenta:[],mesa: MESA_URL || '5', token: TOKEN_URL || null, canal: (MESA_URL || CARTA_URL) ? 'mesa' : null};
 
+// Traba simple contra doble-tap en los botones de confirmar/enviar — sin esto, dos toques
+// rápidos (algo común en celular, sobre todo con mala señal y el usuario reintentando)
+// podían mandar el mismo pedido dos veces antes de que la pantalla cambiara.
+let solicitudEnCurso=false;
+
 function fmt(n){return "$"+Math.round(n).toLocaleString("es-AR")}
 function itemsOf(catId){return MENU[catId].map(i=>({...i,catId}))}
 function findItem(id){for(const c in MENU){const f=MENU[c].find(i=>i.id===id);if(f)return{...f,catId:c}}}
@@ -1192,6 +1197,8 @@ function postToSheet(body){
 }
 
 function sendRound(){
+  if(solicitudEnCurso)return;
+  solicitudEnCurso=true;
   const lines=allCartLines();const total=cartTotal(lines);
   const time=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false});
   const rondaLocal={lines,total,time};
@@ -1211,6 +1218,7 @@ function sendRound(){
   if(CONFIG.APPS_SCRIPT_URL){
     postToSheet({action:'crearPedido',tipo:'mesa',mesa:state.mesa,token:state.token,sesion:state.sesion,items:buildItemsForApi(lines)})
       .then(data=>{
+        solicitudEnCurso=false;
         if(!data.ok){
           const idx=state.cuenta.indexOf(rondaLocal);
           if(idx>-1)state.cuenta.splice(idx,1);
@@ -1218,7 +1226,9 @@ function sendRound(){
           document.getElementById('screen-mesa-invalida').classList.add('active');
         }
       })
-      .catch(err=>console.warn('No se pudo guardar la ronda en el Sheet (el mozo la sigue viendo local en esta demo).',err));
+      .catch(err=>{solicitudEnCurso=false;console.warn('No se pudo guardar la ronda en el Sheet (el mozo la sigue viendo local en esta demo).',err)});
+  } else {
+    solicitudEnCurso=false;
   }
 }
 function backToMenu(){goTo('menu');renderMenu();}
@@ -1240,6 +1250,7 @@ function askBill(){
 }
 
 function confirmarPedido(){
+  if(solicitudEnCurso)return;
   const lines=allCartLines();
   if(lines.length===0||!datosContactoCompletos())return;
 
@@ -1256,6 +1267,7 @@ function confirmarPedido(){
     return;
   }
 
+  solicitudEnCurso=true;
   const bar=document.getElementById('bottombar');
   bar.innerHTML=`<div class="total">Enviando...</div>`;
 
@@ -1270,6 +1282,7 @@ function confirmarPedido(){
     items:buildItemsForApi(lines),
     comprobante:state.metodoPago==='transferencia'?state.comprobante:undefined,
   }).then(data=>{
+    solicitudEnCurso=false;
     if(!data.ok){
       errEl.textContent='No pudimos enviar el pedido. Probá de nuevo en un momento.';
       errEl.style.display='block';
@@ -1281,6 +1294,7 @@ function confirmarPedido(){
     document.getElementById('codigoError').style.display='none';
     goTo('verificar');
   }).catch(err=>{
+    solicitudEnCurso=false;
     console.warn('Error creando el pedido',err);
     errEl.textContent='No pudimos conectar con el local. Revisá tu conexión y probá de nuevo.';
     errEl.style.display='block';
@@ -1289,20 +1303,25 @@ function confirmarPedido(){
 }
 
 function confirmarCodigo(){
+  if(solicitudEnCurso)return;
   const codigo=document.getElementById('codigoInput').value.trim();
   const errEl=document.getElementById('codigoError');
   if(codigo.length!==4){errEl.textContent='Ingresá los 4 dígitos del código.';errEl.style.display='block';return}
 
+  solicitudEnCurso=true;
   postToSheet({action:'verificarCodigo',id_pedido:state.pedidoId,codigo})
     .then(data=>{
+      solicitudEnCurso=false;
       if(!data.ok){
-        errEl.textContent='Código incorrecto, probá de nuevo.';
+        errEl.textContent = data.error==='demasiados_intentos'
+          ? 'Probaste el código incorrecto varias veces — esperá un rato y volvé a intentar.'
+          : 'Código incorrecto, probá de nuevo.';
         errEl.style.display='block';
         return;
       }
       mostrarPedidoConfirmado();
     })
-    .catch(()=>{errEl.textContent='No pudimos verificar el código. Probá de nuevo.';errEl.style.display='block'});
+    .catch(()=>{solicitudEnCurso=false;errEl.textContent='No pudimos verificar el código. Probá de nuevo.';errEl.style.display='block'});
 }
 
 function mostrarPedidoConfirmado(){
