@@ -612,6 +612,21 @@ CATS.forEach(c => { CATS_META[c.id] = { icon: c.icon, half: c.half, docena: c.do
 // Sin APPS_SCRIPT_URL configurado no hay nada que esperar: se usa el demo local directo.
 let menuState = CONFIG.APPS_SCRIPT_URL ? 'cargando' : 'listo';
 
+// Si alguien ya escaneó el QR antes (clientes recurrentes, el mozo probando, etc.), mostramos
+// de una el menú de la última vez en vez de hacer esperar el viaje a Apps Script de nuevo —
+// puede estar un poco viejo, no pasa nada: el precio real siempre se recalcula en el
+// servidor al mandar el pedido, esto es solo para que la carta no tarde en aparecer.
+// fetchMenuFromSheet() de todas formas pide la versión fresca en segundo plano y la pisa
+// apenas llega (ver el final de esa función).
+const MENU_CACHE_KEY = 'nano_menu_cache_v1';
+try {
+  const cacheado = localStorage.getItem(MENU_CACHE_KEY);
+  if(cacheado){
+    const { cats, menu } = JSON.parse(cacheado);
+    if(Array.isArray(cats) && cats.length && menu){ CATS = cats; MENU = menu; menuState = 'listo'; }
+  }
+} catch(e){ /* localStorage puede fallar en modo incógnito o si está lleno — sigue con el demo, sin romper nada */ }
+
 function fetchMenuFromSheet(){
   if(!CONFIG.APPS_SCRIPT_URL){
     console.info('CONFIG.APPS_SCRIPT_URL vacío: se usa el menú de demo hardcodeado en este archivo.');
@@ -643,6 +658,7 @@ function fetchMenuFromSheet(){
       CATS = newCats;
       MENU = newMenu;
       menuState='listo';
+      try { localStorage.setItem(MENU_CACHE_KEY, JSON.stringify({ cats: CATS, menu: MENU })); } catch(e){}
 
       if(document.getElementById('screen-menu').classList.contains('active')){
         if(!CATS.find(c => c.id === state.cat)) state.cat = CATS[0] ? CATS[0].id : state.cat;
