@@ -486,12 +486,17 @@ function ic(key,size=40){return `<svg viewBox="0 0 40 40" fill="none" stroke="cu
 const CONFIG = {
   // URL del logo. Subí tu logo.png a la raíz del repo (junto a este index.html) y dejalo así.
   LOGO_URL: 'logo.png',
-  // URL del Web App de Apps Script (Implementar > Nueva implementación > Aplicación web).
-  // Mientras esté vacío, la app usa el menú de acá abajo (CATS/MENU) como demo offline.
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwZbKOiZmtimoOVp8dt5wAehccD1J-fQTLfGLk8oMf6AAdFkoN1_G3x7zGoQXFHMHqubg/exec',
+  // Antes era el Web App de Apps Script; ahora es la Edge Function de Supabase (mismo
+  // contrato de request/response, ver nano-backend-supabase/). Mientras esté vacío, la app
+  // usa el menú de acá abajo (CATS/MENU) como demo offline.
+  APPS_SCRIPT_URL: 'https://hmfsqgacoxfpfvhvfzsq.supabase.co/functions/v1/api',
+  // Supabase exige estos dos headers en cada request (a diferencia de Apps Script, que no
+  // pedía nada) — sin esto, ni siquiera llega al código de la función.
+  SUPABASE_ANON_KEY: 'sb_publishable_rsbuuHshmfgdYfNK9Ir2Hg_QtAHbTQV',
   // Costo fijo de envío a domicilio. Se suma al total solo cuando el canal es "envio".
   COSTO_ENVIO: 1000,
 };
+const SUPABASE_HEADERS = { apikey: CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + CONFIG.SUPABASE_ANON_KEY };
 
 // La mesa y el token llegan por la URL del QR: https://tu-sitio/?mesa=6&t=a91f3c2b
 // Cada QR físico tiene su propio token (ver pestaña Mesas del Sheet). Sin esos parámetros
@@ -635,7 +640,7 @@ function fetchMenuFromSheet(){
   menuState='cargando';
   if(document.getElementById('screen-menu').classList.contains('active')) renderMenuStatus();
 
-  fetch(`${CONFIG.APPS_SCRIPT_URL}?action=menu&canal=${encodeURIComponent(state.canal)}`)
+  fetch(`${CONFIG.APPS_SCRIPT_URL}?action=menu&canal=${encodeURIComponent(state.canal)}`, { headers: SUPABASE_HEADERS })
     .then(r => r.json())
     .then(data => {
       if(!data || !Array.isArray(data.categorias) || !Array.isArray(data.productos)) throw new Error('respuesta_invalida');
@@ -1193,7 +1198,7 @@ function buildItemsForApi(lines){
 }
 
 function postToSheet(body){
-  return fetch(CONFIG.APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify(body)}).then(r=>r.json());
+  return fetch(CONFIG.APPS_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json',...SUPABASE_HEADERS},body:JSON.stringify(body)}).then(r=>r.json());
 }
 
 function sendRound(){
@@ -1377,7 +1382,7 @@ function validarMesaAlCargar(){
     return;
   }
 
-  fetch(`${CONFIG.APPS_SCRIPT_URL}?action=validarMesa&mesa=${encodeURIComponent(MESA_URL)}&token=${encodeURIComponent(TOKEN_URL||'')}`)
+  fetch(`${CONFIG.APPS_SCRIPT_URL}?action=validarMesa&mesa=${encodeURIComponent(MESA_URL)}&token=${encodeURIComponent(TOKEN_URL||'')}`, { headers: SUPABASE_HEADERS })
     .then(r=>r.json())
     .then(data=>{
       if(!data.valida){
