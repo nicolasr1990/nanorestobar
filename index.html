@@ -87,6 +87,44 @@
   }
   .pay-opt.active{border-color:var(--accent);color:var(--text);background:rgba(221,147,80,0.18)}
   .cart-error{margin:14px 18px 0;padding:10px 14px;border-radius:var(--radius-md);background:rgba(220,70,60,0.12);border:1px solid rgba(220,70,60,0.3);color:#ff9b8f;font-size:12px}
+
+  /* ===== Código de verificación: 4 casilleros que se abren en abanico al completarse y
+     se juntan en uno solo para el "sello" de verificando/confirmado. ===== */
+  .otp-wrap{position:relative;margin-top:26px;height:64px;display:flex;align-items:center;justify-content:center}
+  .otp-slots{display:flex;gap:14px}
+  .otp-slot{
+    width:56px;height:64px;border-radius:var(--radius-md);text-align:center;font-family:var(--display);font-size:24px;font-weight:700;
+    background:rgba(20,15,12,0.5);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);
+    border:1px solid var(--glass-border);color:var(--text);outline:none;box-shadow:var(--shadow-sm);
+    transform-origin:50% 320%;transition:border-color 0.2s,box-shadow 0.2s;caret-color:var(--accent);
+  }
+  .otp-slot:focus{border-color:rgba(221,147,80,0.55);box-shadow:0 0 0 3px rgba(221,147,80,0.12),var(--shadow-sm)}
+  .otp-slot.filled{border-color:rgba(221,147,80,0.4)}
+  .otp-slots.shake .otp-slot{
+    border-color:rgba(220,70,60,0.6);animation:otpShake 0.42s cubic-bezier(0.4,0,0.2,1);
+  }
+  @keyframes otpShake{
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-8px)}
+    40%{transform:translateX(7px)}
+    60%{transform:translateX(-5px)}
+    80%{transform:translateX(3px)}
+  }
+  /* El "sello": un solo casillero que reemplaza a los 4 mientras se verifica el código. */
+  .otp-seal{
+    position:absolute;inset:0;margin:auto;width:64px;height:64px;border-radius:var(--radius-md);
+    display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;
+    background:rgba(20,15,12,0.5);border:1px solid rgba(221,147,80,0.5);color:var(--accent-light);
+    box-shadow:0 0 0 0 rgba(221,147,80,0.35);transition:opacity 0.25s,border-color 0.3s,color 0.3s;
+  }
+  .otp-seal svg{width:26px;height:26px;stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset 0.35s ease 0.05s}
+  .otp-seal.show{opacity:1;animation:otpPulse 1.1s ease-in-out infinite}
+  .otp-seal.ok{border-color:var(--success);color:var(--success);animation:none;box-shadow:0 0 24px rgba(74,222,128,0.35)}
+  .otp-seal.ok svg{stroke-dashoffset:0}
+  @keyframes otpPulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(221,147,80,0.35)}
+    50%{box-shadow:0 0 0 10px rgba(221,147,80,0)}
+  }
   .selector-options{display:flex;flex-direction:column;gap:12px;width:100%;margin-top:30px}
   .selector-opt{
     display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:var(--radius-lg);
@@ -433,14 +471,21 @@
 <div class="screen" id="screen-verificar">
   <div class="landing">
     <div class="landing-glow"></div>
-    <div style="font-size:40px;margin-bottom:10px;">📲</div>
-    <div class="error-title">Confirmá tu número</div>
-    <div class="landing-note" style="margin-top:10px;">
-      Te enviamos un código de 4 dígitos por WhatsApp al número que ingresaste. Escribilo acá para confirmar el pedido.
+    <div style="font-size:40px;margin-bottom:10px;" id="otpEmoji">📲</div>
+    <div class="error-title" id="otpTitle">Confirmá tu número</div>
+    <div class="landing-note" style="margin-top:10px;" id="otpSub">
+      Te enviamos un código de 4 dígitos por WhatsApp al número que ingresaste.
     </div>
-    <input class="field-input codigo-input" id="codigoInput" inputmode="numeric" maxlength="4" placeholder="0000" style="margin-top:24px;text-align:center;letter-spacing:0.5em;font-size:22px;">
-    <div id="codigoError" class="cart-error" style="display:none;margin-top:10px;">Código incorrecto, probá de nuevo.</div>
-    <button class="cta-primary" style="margin-top:22px;" onclick="confirmarCodigo()">Confirmar pedido</button>
+    <div class="otp-wrap" id="otpWrap">
+      <div class="otp-slots" id="otpSlots">
+        <input class="otp-slot" data-i="0" inputmode="numeric" maxlength="1">
+        <input class="otp-slot" data-i="1" inputmode="numeric" maxlength="1">
+        <input class="otp-slot" data-i="2" inputmode="numeric" maxlength="1">
+        <input class="otp-slot" data-i="3" inputmode="numeric" maxlength="1">
+      </div>
+      <div class="otp-seal" id="otpSeal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+    </div>
+    <div id="codigoError" class="cart-error" style="display:none;margin-top:14px;">Código incorrecto, probá de nuevo.</div>
   </div>
 </div>
 
@@ -1301,8 +1346,7 @@ function confirmarPedido(){
       return;
     }
     state.pedidoId=data.id_pedido;
-    document.getElementById('codigoInput').value='';
-    document.getElementById('codigoError').style.display='none';
+    resetOtp();
     goTo('verificar');
   }).catch(err=>{
     solicitudEnCurso=false;
@@ -1313,26 +1357,130 @@ function confirmarPedido(){
   });
 }
 
-function confirmarCodigo(){
-  if(solicitudEnCurso)return;
-  const codigo=document.getElementById('codigoInput').value.trim();
-  const errEl=document.getElementById('codigoError');
-  if(codigo.length!==4){errEl.textContent='Ingresá los 4 dígitos del código.';errEl.style.display='block';return}
+/* ===== Código de verificación: 4 casilleros =====
+   Al completar el 4to dígito se manda solo (sin botón). La animación es la que pasó el
+   dueño de referencia: los 4 casilleros se abren en abanico (un solo giro+traslado desde
+   un punto de pivote imaginario bien por debajo de cada uno — por eso el transform-origin
+   al 320% en vez de animar curva y traslado por separado) y después se juntan en uno solo,
+   que queda como "sello" mostrando el estado (verificando / confirmado / incorrecto). */
+let otpSlotsInit=false;
+function initOtpSlots(){
+  if(otpSlotsInit)return; otpSlotsInit=true;
+  const slots=[...document.querySelectorAll('.otp-slot')];
+  slots.forEach((slot,i)=>{
+    slot.addEventListener('input',()=>{
+      slot.value=slot.value.replace(/\D/g,'').slice(-1);
+      slot.classList.toggle('filled',!!slot.value);
+      if(slot.value && slots[i+1])slots[i+1].focus();
+      checkOtpComplete(slots);
+    });
+    slot.addEventListener('keydown',e=>{
+      if(e.key==='Backspace' && !slot.value && slots[i-1]){slots[i-1].focus();slots[i-1].value='';slots[i-1].classList.remove('filled')}
+    });
+    slot.addEventListener('paste',e=>{
+      const texto=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');
+      if(!texto)return;
+      e.preventDefault();
+      texto.slice(0,4).split('').forEach((d,j)=>{ if(slots[j]){slots[j].value=d;slots[j].classList.add('filled')} });
+      (slots[Math.min(texto.length,4)-1]||slots[3]).focus();
+      checkOtpComplete(slots);
+    });
+  });
+}
 
+function checkOtpComplete(slots){
+  const codigo=slots.map(s=>s.value).join('');
+  if(codigo.length===4)onOtpComplete(codigo);
+}
+
+function resetOtp(){
+  initOtpSlots();
+  document.querySelectorAll('.otp-slot').forEach(s=>{
+    s.getAnimations().forEach(a=>a.cancel()); // saca cualquier fill:forwards de una vuelta previa (opacity 0, rotado, etc.)
+    s.value='';s.classList.remove('filled');s.style.transform='';s.disabled=false;
+  });
+  document.getElementById('otpSlots').classList.remove('shake');
+  document.getElementById('otpSeal').classList.remove('show','ok');
+  document.getElementById('codigoError').style.display='none';
+  otpSetTitulo('Confirmá tu número','Te enviamos un código de 4 dígitos por WhatsApp al número que ingresaste.','📲');
+  setTimeout(()=>{ const first=document.querySelector('.otp-slot'); if(first)first.focus(); },300);
+}
+
+function otpSetTitulo(titulo,sub,emoji,color){
+  document.getElementById('otpTitle').textContent=titulo;
+  document.getElementById('otpTitle').style.color=color||'';
+  document.getElementById('otpSub').textContent=sub;
+  if(emoji)document.getElementById('otpEmoji').textContent=emoji;
+}
+
+// El "abanico": cada casillero rota+traslada una sola vez desde un pivote muy por debajo
+// suyo (ver transform-origin en CSS) — combinando curva y desplazamiento en un solo giro,
+// en vez de animarlos por separado.
+function otpFanOut(slots){
+  const angulos=[-9,-3,3,9], dx=[-10,-4,4,10];
+  return Promise.all(slots.map((s,i)=>s.animate(
+    [ { transform:'translateX(0) rotate(0deg)' }, { transform:`translateX(${dx[i]}px) rotate(${angulos[i]}deg)` } ],
+    { duration:420, delay:i*45, easing:'cubic-bezier(0.34,1.56,0.64,1)', fill:'forwards' }
+  ).finished));
+}
+
+// Junta los 4 en la posición del primero — como recoger la mano de cartas — mientras se
+// desvanecen, para que el "sello" que aparece encima quede como si fuera el mismo casillero.
+function otpGather(slots){
+  const spacing=70; // ancho del casillero (56px) + separación (14px)
+  return Promise.all(slots.map((s,i)=>s.animate(
+    [ { transform:s.style.transform||'translateX(0) rotate(0deg)', opacity:1 }, { transform:`translateX(${-i*spacing}px) rotate(0deg)`, opacity:0 } ],
+    { duration:320, delay:(3-i)*30, easing:'cubic-bezier(0.4,0,0.2,1)', fill:'forwards' }
+  ).finished));
+}
+
+async function onOtpComplete(codigo){
+  if(solicitudEnCurso)return;
   solicitudEnCurso=true;
-  postToSheet({action:'verificarCodigo',id_pedido:state.pedidoId,codigo})
-    .then(data=>{
-      solicitudEnCurso=false;
-      if(!data.ok){
-        errEl.textContent = data.error==='demasiados_intentos'
-          ? 'Probaste el código incorrecto varias veces — esperá un rato y volvé a intentar.'
-          : 'Código incorrecto, probá de nuevo.';
-        errEl.style.display='block';
-        return;
-      }
-      mostrarPedidoConfirmado();
-    })
-    .catch(()=>{solicitudEnCurso=false;errEl.textContent='No pudimos verificar el código. Probá de nuevo.';errEl.style.display='block'});
+  const slots=[...document.querySelectorAll('.otp-slot')];
+  slots.forEach(s=>s.disabled=true);
+
+  await otpFanOut(slots);
+  await otpGather(slots);
+
+  document.getElementById('otpSeal').classList.add('show');
+  otpSetTitulo('Verificando tu código','Un momento, lo estamos confirmando…');
+
+  const inicio=Date.now();
+  let data;
+  try{
+    data=await postToSheet({action:'verificarCodigo',id_pedido:state.pedidoId,codigo});
+  }catch(err){
+    data={ok:false,error:'sin_conexion'};
+  }
+  // Que el sello se vea pulsando al menos un toque, aunque el server responda al instante —
+  // si no, la animación previa de armar el abanico queda cortada de golpe.
+  const faltante=650-(Date.now()-inicio);
+  if(faltante>0)await new Promise(r=>setTimeout(r,faltante));
+
+  if(data.ok){
+    document.getElementById('otpSeal').classList.add('ok');
+    otpSetTitulo('¡Confirmado!','Ya casi, estamos armando tu pedido…','✅','var(--success)');
+    setTimeout(()=>{ solicitudEnCurso=false; mostrarPedidoConfirmado(); },750);
+    return;
+  }
+
+  solicitudEnCurso=false;
+  document.getElementById('otpSeal').classList.remove('show');
+  const errEl=document.getElementById('codigoError');
+  errEl.textContent = data.error==='demasiados_intentos'
+    ? 'Probaste el código incorrecto varias veces — esperá un rato y volvé a intentar.'
+    : 'Código incorrecto, probá de nuevo.';
+  errEl.style.display='block';
+  otpSetTitulo('Confirmá tu número','Te enviamos un código de 4 dígitos por WhatsApp al número que ingresaste.','📲');
+
+  const wrap=document.getElementById('otpSlots');
+  slots.forEach(s=>{
+    s.getAnimations().forEach(a=>a.cancel()); // saca el fill:forwards del abanico/junte (opacity 0, rotado)
+    s.style.transform=''; s.disabled=false; s.value=''; s.classList.remove('filled');
+  });
+  wrap.classList.add('shake');
+  setTimeout(()=>{ wrap.classList.remove('shake'); slots[0].focus(); },450);
 }
 
 function mostrarPedidoConfirmado(){
