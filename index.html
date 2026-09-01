@@ -154,55 +154,64 @@
   .cart-btn svg{width:18px;height:18px}
   .cart-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:50%;background:var(--accent);color:#1a0f00;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
 
-  /* ===== BIG CATEGORY CAROUSEL (scroll on big images) ===== */
-  /* Fondo desenfocado con la foto de la categoría activa — solo ocupa esta franja de
-     arriba (no toda la pantalla), y se cruza en fade cuando cambia de categoría, sea por
-     tap o por deslizar el carrusel (ver switchCatHeroBg()). */
-  .cat-carousel-wrap{position:relative;padding:44px 0 10px;overflow-x:hidden;overflow-y:visible;isolation:isolate}
-  .cat-hero-bg{
-    position:absolute;inset:-20px -20px -14px;z-index:0;background-size:cover;background-position:center;
-    filter:blur(26px) saturate(130%) brightness(0.5);transform:scale(1.15);transition:opacity 0.32s ease;
+  /* ===== Categoría a pantalla completa: plato + transición diagonal + sheet de productos =====
+     Adaptado de una referencia que pasó el dueño (un solo plato grande por categoría, se
+     desliza en diagonal al cambiar, con miniaturas "espía" de la categoría anterior/siguiente
+     a los costados, y un botón que abre una bandeja inferior con la lista de productos). */
+  #menuContent{position:relative}
+  .cat-backdrop{
+    position:absolute;inset:-10% -10% auto -10%;height:58vh;z-index:0;
+    background-size:cover;background-position:center;filter:blur(38px) saturate(130%) brightness(0.5);
+    transform:scale(1.15);opacity:1;transition:opacity 0.5s ease;
   }
-  .cat-hero-bg.switching{opacity:0}
-  .cat-hero-fade{
-    position:absolute;inset:0 0 -14px;z-index:0;pointer-events:none;
-    background:linear-gradient(180deg,rgba(10,11,13,0.05) 0%,rgba(10,11,13,0.4) 72%,var(--bg) 100%);
+  .cat-backdrop::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(10,11,13,0.08) 0%,var(--bg) 94%);
   }
-  .cat-carousel{
-    position:relative;z-index:1;
-    display:flex;gap:24px;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;scrollbar-width:none;scroll-behavior:smooth;
-    padding:16px calc(50% - 105px) 10px;-webkit-overflow-scrolling:touch;
-  }
-  .cat-carousel::-webkit-scrollbar{display:none}
-  .cat-carousel-item{
-    flex:0 0 auto;scroll-snap-align:center;text-align:center;cursor:pointer;
-    transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);opacity:0.5;
-  }
-  .cat-carousel-item.active{opacity:1;transform:scale(1.05)}
-  .cat-carousel-item:not(.active){transform:scale(0.88)}
-  .cat-carousel-img{
-    width:210px;height:210px;border-radius:50%;position:relative;overflow:hidden;
-    border:3px solid rgba(221,147,80,0.25);box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 40px rgba(221,147,80,0.15);
-    transition:var(--transition);
-  }
-  .cat-carousel-item.active .cat-carousel-img{
-    border-color:rgba(221,147,80,0.55);box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 50px rgba(221,147,80,0.25);
-  }
-  .cat-carousel-img img{width:100%;height:100%;object-fit:cover;object-position:center center;transition:transform 0.6s cubic-bezier(0.4,0,0.2,1)}
-  .cat-carousel-img::after{content:'';position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 30px rgba(0,0,0,0.4)}
-  .cat-carousel-img.img-fallback{background:linear-gradient(150deg,var(--accent),var(--ember));display:flex;align-items:center;justify-content:center}
-  .cat-carousel-img.img-fallback img{display:none}
-  .cat-fallback-icon{display:none;width:70px;height:70px;color:rgba(255,255,255,.9);stroke-width:1.6}
-  .cat-carousel-img.img-fallback .cat-fallback-icon{display:block}
-  .cat-carousel-name{font-family:var(--display);font-weight:700;font-size:18px;margin-top:14px;letter-spacing:-0.01em;opacity:0;transition:opacity 0.3s;text-shadow:0 2px 10px rgba(0,0,0,0.65)}
-  .cat-carousel-item.active .cat-carousel-name{opacity:1}
+  .cat-index{position:relative;z-index:2;text-align:center;padding-top:10px;font-size:11.5px;letter-spacing:0.06em;color:var(--text-secondary)}
 
-  /* U indicator under active */
-  .cat-carousel-indicator{height:3px;border-radius:3px;background:var(--accent);width:24px;margin:8px auto 0;opacity:0;transition:opacity 0.3s}
-  .cat-carousel-item.active .cat-carousel-indicator{opacity:0.7}
+  .cat-plate-zone{position:relative;z-index:2;height:36vh;margin-top:4vh;touch-action:pan-y}
+  .cat-plate{
+    position:absolute;top:50%;left:50%;width:64vw;max-width:270px;height:64vw;max-height:270px;
+    margin:-135px 0 0 -135px;border-radius:50%;background-size:cover;background-position:center;
+    border:3px solid var(--glass-border-hover);box-shadow:var(--shadow-md);
+    transition:transform 0.55s cubic-bezier(0.22,1,0.36,1),opacity 0.55s ease,filter 0.55s ease;
+    cursor:grab;z-index:2;
+  }
+  .cat-plate.enter-from-br{transform:translate(46%,34%) scale(0.55);opacity:0;filter:blur(10px);z-index:1}
+  .cat-plate.exit-to-tl{transform:translate(-46%,-34%) scale(0.55);opacity:0;filter:blur(10px)}
+  .cat-plate.enter-from-bl{transform:translate(-46%,34%) scale(0.55);opacity:0;filter:blur(10px);z-index:1}
+  .cat-plate.exit-to-tr{transform:translate(46%,-34%) scale(0.55);opacity:0;filter:blur(10px)}
+  .cat-plate.center{transform:translate(0,0) scale(1);opacity:1;filter:blur(0)}
 
-  /* Divider */
-  .section-divider{height:1px;background:linear-gradient(90deg,transparent,var(--glass-border),transparent);margin:6px 18px 14px}
+  .cat-peek{
+    position:absolute;top:50%;z-index:3;width:54px;height:54px;margin-top:-27px;border-radius:50%;overflow:hidden;
+    border:2px solid var(--glass-border);opacity:0.5;filter:blur(1px) brightness(0.75);cursor:pointer;
+    transition:opacity 0.25s,filter 0.25s,transform 0.25s;
+  }
+  .cat-peek img{width:100%;height:100%;object-fit:cover;display:block}
+  .cat-peek:hover,.cat-peek:active{opacity:0.85;filter:blur(0) brightness(0.95)}
+  .cat-peek.prev{left:8px;transform:scale(0.9)}
+  .cat-peek.next{right:8px;transform:scale(0.9)}
+
+  .cat-name-block{position:relative;z-index:2;text-align:center;margin-top:18px;transition:transform 0.4s ease,opacity 0.4s ease}
+  .cat-name-block h1{font-family:var(--display);font-size:22px;font-weight:700}
+  .cat-swipe-hint{position:relative;z-index:2;text-align:center;margin-top:10px;font-size:11px;color:var(--text-muted)}
+  .cat-open-btn{display:block;position:relative;z-index:2;margin:20px auto 26px;width:calc(100% - 36px)}
+
+  .cat-sheet{
+    position:fixed;left:0;right:0;bottom:0;max-width:430px;margin:0 auto;z-index:60;height:76vh;
+    background:var(--bg-elevated);border-radius:26px 26px 0 0;border:1px solid var(--glass-border);border-bottom:none;
+    transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.32,0.72,0,1);
+    box-shadow:0 -20px 50px rgba(0,0,0,0.45);
+  }
+  .cat-sheet.open{transform:translateY(0)}
+  .cat-sheet-handle{width:38px;height:4px;background:var(--glass-border-hover);border-radius:99px;margin:12px auto 4px}
+  .cat-sheet-header{display:flex;justify-content:space-between;align-items:center;padding:10px 18px 14px;border-bottom:1px solid var(--glass-border)}
+  .cat-sheet-header h2{font-family:var(--display);font-size:18px;font-weight:700}
+  .cat-sheet-close{width:30px;height:30px;border-radius:50%;background:var(--surface-hover);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text)}
+  .cat-sheet-close svg{width:14px;height:14px}
+  .cat-sheet-list-wrap{padding:6px 0 24px;overflow-y:auto;height:calc(100% - 62px)}
 
   /* Product List - TEXT ONLY */
   .products-header{display:flex;align-items:center;justify-content:space-between;padding:0 18px 12px}
@@ -424,15 +433,30 @@
   <div id="menuStatus" class="menu-status" style="display:none;"></div>
 
   <div id="menuContent">
-    <div class="cat-carousel-wrap">
-      <div class="cat-hero-bg" id="catHeroBg"></div>
-      <div class="cat-hero-fade"></div>
-      <div class="cat-carousel" id="catCarousel"></div>
+    <div class="cat-backdrop" id="catBackdrop"></div>
+    <div class="cat-index" id="catIndex"></div>
+
+    <div class="cat-plate-zone" id="catPlateZone">
+      <div class="cat-peek prev" id="catPeekPrev"><img id="catPeekPrevImg" alt="Categoría anterior"></div>
+      <div class="cat-peek next" id="catPeekNext"><img id="catPeekNextImg" alt="Categoría siguiente"></div>
     </div>
 
-    <div class="section-divider"></div>
+    <div class="cat-name-block" id="catNameBlock"></div>
+    <div class="cat-swipe-hint">Deslizá el plato o tocá una miniatura del costado</div>
+    <button class="cta cat-open-btn" id="catOpenBtn">Ver productos</button>
+  </div>
 
-    <div class="products-list" id="productsList"></div>
+  <div class="cat-sheet" id="catSheet">
+    <div class="cat-sheet-handle"></div>
+    <div class="cat-sheet-header">
+      <h2 id="catSheetTitle"></h2>
+      <div class="cat-sheet-close" id="catSheetClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </div>
+    </div>
+    <div class="cat-sheet-list-wrap">
+      <div class="products-list" id="productsList"></div>
+    </div>
   </div>
 </div>
 
@@ -796,87 +820,120 @@ function renderMenu(){
   document.getElementById('menuContent').style.display='block';
   // En mesa el QR es solo para mirar el menú: el pedido lo toma la moza a mano, no se manda desde acá.
   document.getElementById('cartBtn').style.display = state.canal==='mesa' ? 'none' : 'flex';
-  setCatHeroBg(state.cat,false);
-  renderCatCarousel();
+  setStaticCat(state.cat);
   renderProducts();
   updateCartBadge();
 }
 
-// Cruza en fade el fondo desenfocado de arriba a la foto de la categoría activa.
-// animate=false solo en la primera carga, para no arrancar con un parpadeo.
-function setCatHeroBg(catId,animate){
-  const el=document.getElementById('catHeroBg');
-  const foto=CAT_IMAGES[catId]||CAT_IMAGES.pizzas;
-  if(!animate){ el.style.backgroundImage=`url('${foto}')`; return; }
-  el.classList.add('switching');
+function catFoto(catId){ return CAT_IMAGES[catId]||CAT_IMAGES.pizzas; }
+function catIndexOf(catId){ return CATS.findIndex(c=>c.id===catId); }
+
+// Dibuja la categoría activa sin animación (primera carga, o después de un cambio de canal).
+function setStaticCat(catId){
+  const cat=CATS.find(c=>c.id===catId);
+  if(!cat)return;
+  document.getElementById('catBackdrop').style.backgroundImage=`url('${catFoto(cat.id)}')`;
+  document.getElementById('catBackdrop').style.opacity='1';
+  document.getElementById('catIndex').textContent=`${catIndexOf(catId)+1} / ${CATS.length}`;
+  document.getElementById('catNameBlock').innerHTML=`<h1>${cat.name}</h1>`;
+  document.getElementById('catSheetTitle').textContent=cat.name;
+
+  const zone=document.getElementById('catPlateZone');
+  zone.querySelectorAll('.cat-plate').forEach(p=>p.remove());
+  const plate=document.createElement('div');
+  plate.className='cat-plate center';
+  plate.style.backgroundImage=`url('${catFoto(cat.id)}')`;
+  zone.appendChild(plate);
+
+  updateCatPeeks(catId);
+}
+
+function updateCatPeeks(catId){
+  const i=catIndexOf(catId);
+  const prevCat=CATS[(i-1+CATS.length)%CATS.length];
+  const nextCat=CATS[(i+1)%CATS.length];
+  document.getElementById('catPeekPrevImg').src=catFoto(prevCat.id);
+  document.getElementById('catPeekNextImg').src=catFoto(nextCat.id);
+}
+
+// Transición diagonal con eje distinto según la dirección real — mismo criterio que la
+// referencia: "adelante" entra desde abajo-derecha y sale hacia arriba-izquierda, "atrás"
+// es la diagonal opuesta, no la misma invertida en el tiempo.
+let catAnimating=false;
+function goToCat(catId,direction){
+  if(catAnimating||catId===state.cat)return;
+  catAnimating=true;
+
+  const zone=document.getElementById('catPlateZone');
+  const outgoing=zone.querySelector('.cat-plate.center');
+  const nextCat=CATS.find(c=>c.id===catId);
+
+  const enterClass=direction==='next'?'enter-from-br':'enter-from-bl';
+  const exitClass=direction==='next'?'exit-to-tl':'exit-to-tr';
+
+  const incoming=document.createElement('div');
+  incoming.className='cat-plate '+enterClass;
+  incoming.style.backgroundImage=`url('${catFoto(nextCat.id)}')`;
+  zone.appendChild(incoming);
+  void incoming.offsetWidth; // fuerza el reflow para que la clase inicial pinte antes de animar
+
+  outgoing.classList.remove('center');
+  outgoing.classList.add(exitClass);
+  incoming.classList.remove(enterClass);
+  incoming.classList.add('center');
+
+  document.getElementById('catBackdrop').style.opacity='0.4';
+  const nameBlock=document.getElementById('catNameBlock');
+  nameBlock.style.opacity='0';
+  nameBlock.style.transform=direction==='next'?'translateY(-8px)':'translateY(8px)';
+
   setTimeout(()=>{
-    el.style.backgroundImage=`url('${foto}')`;
-    el.classList.remove('switching');
-  },180);
+    state.cat=catId;
+    document.getElementById('catBackdrop').style.backgroundImage=`url('${catFoto(nextCat.id)}')`;
+    document.getElementById('catBackdrop').style.opacity='1';
+    document.getElementById('catIndex').textContent=`${catIndexOf(catId)+1} / ${CATS.length}`;
+    nameBlock.innerHTML=`<h1>${nextCat.name}</h1>`;
+    nameBlock.style.transform='translateY(0)';
+    requestAnimationFrame(()=>{ nameBlock.style.opacity='1'; });
+    document.getElementById('catSheetTitle').textContent=nextCat.name;
+    renderProducts();
+    outgoing.remove();
+    updateCatPeeks(catId);
+    catAnimating=false;
+  },600);
 }
 
-function handleCatImgError(img){
-  if(img.dataset.triedPng){ img.parentElement.classList.add('img-fallback'); return; }
-  img.dataset.triedPng = '1';
-  img.src = img.src.replace(/\.jpg$/i, '.png');
-}
+function goNextCat(){ const i=catIndexOf(state.cat); goToCat(CATS[(i+1)%CATS.length].id,'next'); }
+function goPrevCat(){ const i=catIndexOf(state.cat); goToCat(CATS[(i-1+CATS.length)%CATS.length].id,'prev'); }
 
-let carouselObserver=null;
+function openCatSheet(){ document.getElementById('catSheet').classList.add('open'); }
+function closeCatSheet(){ document.getElementById('catSheet').classList.remove('open'); }
 
-function renderCatCarousel(){
-  const el=document.getElementById('catCarousel');el.innerHTML='';
-  CATS.forEach((c,idx)=>{
-    const item=document.createElement('div');
-    item.className='cat-carousel-item'+(c.id===state.cat?' active':'');
-    item.dataset.catId=c.id;
-    item.innerHTML=`<div class="cat-carousel-img">
-      <img src="${CAT_IMAGES[c.id]||CAT_IMAGES.pizzas}" alt="${c.name}" loading="lazy" onerror="handleCatImgError(this)">
-      <div class="cat-fallback-icon">${ic(c.icon,70)}</div>
-    </div>
-    <div class="cat-carousel-name">${c.name}</div>
-    <div class="cat-carousel-indicator"></div>`;
-    item.onclick=()=>scrollToCat(c.id);
-    el.appendChild(item);
+document.getElementById('catPeekNext').addEventListener('click',goNextCat);
+document.getElementById('catPeekPrev').addEventListener('click',goPrevCat);
+document.getElementById('catOpenBtn').addEventListener('click',openCatSheet);
+document.getElementById('catSheetClose').addEventListener('click',closeCatSheet);
+
+// Arrastrar el plato (dedo o mouse) dispara la misma transición diagonal que las miniaturas.
+(function(){
+  const zone=document.getElementById('catPlateZone');
+  let startX=null;
+  zone.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; },{passive:true});
+  zone.addEventListener('touchend',e=>{
+    if(startX===null)return;
+    const dx=e.changedTouches[0].clientX-startX;
+    if(Math.abs(dx)>50){ dx<0?goNextCat():goPrevCat(); }
+    startX=null;
   });
-  // Centrar el activo y volver a enganchar el observer sobre los nodos nuevos
-  setTimeout(()=>{
-    const active=el.querySelector('.cat-carousel-item.active');
-    if(active)active.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
-    setupCarouselObserver();
-  },10);
-}
-
-function scrollToCat(catId){
-  if(catId===state.cat)return;
-  state.cat=catId;
-  setCatHeroBg(catId,true);
-  renderCatCarousel();
-  renderProducts();
-}
-
-// Detecta qué imagen quedó centrada al deslizar y sincroniza la lista de abajo.
-// Se reconstruye en cada render porque el innerHTML='' de arriba destruye los nodos anteriores
-// y un IntersectionObserver viejo se queda "mirando" elementos que ya no existen.
-function setupCarouselObserver(){
-  if(carouselObserver)carouselObserver.disconnect();
-  const carousel=document.getElementById('catCarousel');
-  if(!carousel)return;
-  const items=carousel.querySelectorAll('.cat-carousel-item');
-  carouselObserver=new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting&&entry.intersectionRatio>=0.6){
-        const catId=entry.target.dataset.catId;
-        if(catId&&catId!==state.cat){
-          state.cat=catId;
-          setCatHeroBg(catId,true);
-          items.forEach(it=>it.classList.toggle('active',it.dataset.catId===catId));
-          renderProducts();
-        }
-      }
-    });
-  },{root:carousel,threshold:[0.6]});
-  items.forEach(item=>carouselObserver.observe(item));
-}
+  let mouseStartX=null;
+  zone.addEventListener('mousedown',e=>{ if(e.target.closest('.cat-peek'))return; mouseStartX=e.clientX; });
+  window.addEventListener('mouseup',e=>{
+    if(mouseStartX===null)return;
+    const dx=e.clientX-mouseStartX;
+    if(Math.abs(dx)>50){ dx<0?goNextCat():goPrevCat(); }
+    mouseStartX=null;
+  });
+})();
 
 // Lista normal de productos de la categoría activa (la cabecera de arriba, con la foto
 // grande de la categoría, es la que ahora hace de "swipe" — acá abajo es una lista fija
