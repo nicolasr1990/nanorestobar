@@ -117,8 +117,21 @@
   .cart-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:50%;background:var(--accent);color:#1a0f00;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
 
   /* ===== BIG CATEGORY CAROUSEL (scroll on big images) ===== */
-  .cat-carousel-wrap{position:relative;padding:44px 0 10px;overflow-x:hidden;overflow-y:visible}
+  /* Fondo desenfocado con la foto de la categoría activa — solo ocupa esta franja de
+     arriba (no toda la pantalla), y se cruza en fade cuando cambia de categoría, sea por
+     tap o por deslizar el carrusel (ver switchCatHeroBg()). */
+  .cat-carousel-wrap{position:relative;padding:44px 0 10px;overflow-x:hidden;overflow-y:visible;isolation:isolate}
+  .cat-hero-bg{
+    position:absolute;inset:-20px -20px -14px;z-index:0;background-size:cover;background-position:center;
+    filter:blur(26px) saturate(130%) brightness(0.5);transform:scale(1.15);transition:opacity 0.32s ease;
+  }
+  .cat-hero-bg.switching{opacity:0}
+  .cat-hero-fade{
+    position:absolute;inset:0 0 -14px;z-index:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(10,11,13,0.05) 0%,rgba(10,11,13,0.4) 72%,var(--bg) 100%);
+  }
   .cat-carousel{
+    position:relative;z-index:1;
     display:flex;gap:24px;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;scrollbar-width:none;scroll-behavior:smooth;
     padding:16px calc(50% - 105px) 10px;-webkit-overflow-scrolling:touch;
   }
@@ -157,40 +170,7 @@
   .products-header{display:flex;align-items:center;justify-content:space-between;padding:0 18px 12px}
   .products-header h3{font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:-0.01em}
   .products-header .count{font-size:12px;color:var(--text-muted);font-weight:500}
-  /* Deck de productos: uno por pantalla, se desliza al costado como el carrusel de
-     categorías de arriba (mismo scroll-snap horizontal) en vez de una lista vertical. */
-  .products-list{
-    display:flex;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;scrollbar-width:none;scroll-behavior:smooth;
-    -webkit-overflow-scrolling:touch;
-  }
-  .products-list::-webkit-scrollbar{display:none}
-  .product-slide{
-    flex:0 0 100%;scroll-snap-align:center;position:relative;overflow:hidden;
-    display:flex;flex-direction:column;align-items:center;min-height:66vh;padding:30px 24px 22px;
-  }
-  .product-slide .slide-bg{
-    position:absolute;inset:-24px;background-size:cover;background-position:center;
-    filter:blur(30px) saturate(130%) brightness(0.55);transform:scale(1.15);z-index:0;
-  }
-  .product-slide .slide-tint{
-    position:absolute;inset:0;z-index:1;
-    background:linear-gradient(180deg,rgba(10,11,13,0.20),rgba(10,11,13,0.55) 55%,var(--bg) 96%);
-  }
-  .product-slide .slide-photo{
-    position:relative;z-index:2;width:180px;height:180px;border-radius:50%;overflow:hidden;flex-shrink:0;
-    border:3px solid var(--glass-border-hover);box-shadow:var(--shadow-md);margin-top:4px;
-  }
-  .product-slide .slide-photo img{width:100%;height:100%;object-fit:cover;display:block}
-  .product-slide .slide-body{position:relative;z-index:2;text-align:center;margin-top:20px;max-width:320px}
-  .product-slide .slide-body strong{display:block;font-family:var(--display);font-size:21px;font-weight:700;text-shadow:0 2px 10px rgba(0,0,0,0.4)}
-  .product-slide .slide-body .desc{font-size:13px;color:var(--text-secondary);line-height:1.5;margin:8px 6px}
-  .product-slide .slide-body .price{font-family:var(--display);font-weight:700;font-size:23px;color:var(--accent-light);margin-top:8px}
-  .product-slide .slide-actions{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:auto;padding-top:18px}
-  .product-slide.special-slide{min-height:auto;padding:22px 0}
-  .product-slide.special-slide .half-card{margin:0 18px;width:calc(100% - 36px)}
-  .deck-dots{display:flex;justify-content:center;gap:6px;padding:12px 0 2px}
-  .deck-dots span{width:6px;height:6px;border-radius:50%;background:var(--glass-border-hover);transition:var(--transition)}
-  .deck-dots span.active{background:var(--accent);width:16px;border-radius:3px}
+  .products-list{padding:0 18px;display:flex;flex-direction:column;gap:10px}
 
   .product-card{
     border-radius:var(--radius-lg);position:relative;
@@ -407,13 +387,14 @@
 
   <div id="menuContent">
     <div class="cat-carousel-wrap">
+      <div class="cat-hero-bg" id="catHeroBg"></div>
+      <div class="cat-hero-fade"></div>
       <div class="cat-carousel" id="catCarousel"></div>
     </div>
 
     <div class="section-divider"></div>
 
     <div class="products-list" id="productsList"></div>
-    <div class="deck-dots" id="deckDots"></div>
   </div>
 </div>
 
@@ -770,9 +751,23 @@ function renderMenu(){
   document.getElementById('menuContent').style.display='block';
   // En mesa el QR es solo para mirar el menú: el pedido lo toma la moza a mano, no se manda desde acá.
   document.getElementById('cartBtn').style.display = state.canal==='mesa' ? 'none' : 'flex';
+  setCatHeroBg(state.cat,false);
   renderCatCarousel();
   renderProducts();
   updateCartBadge();
+}
+
+// Cruza en fade el fondo desenfocado de arriba a la foto de la categoría activa.
+// animate=false solo en la primera carga, para no arrancar con un parpadeo.
+function setCatHeroBg(catId,animate){
+  const el=document.getElementById('catHeroBg');
+  const foto=CAT_IMAGES[catId]||CAT_IMAGES.pizzas;
+  if(!animate){ el.style.backgroundImage=`url('${foto}')`; return; }
+  el.classList.add('switching');
+  setTimeout(()=>{
+    el.style.backgroundImage=`url('${foto}')`;
+    el.classList.remove('switching');
+  },180);
 }
 
 function handleCatImgError(img){
@@ -809,6 +804,7 @@ function renderCatCarousel(){
 function scrollToCat(catId){
   if(catId===state.cat)return;
   state.cat=catId;
+  setCatHeroBg(catId,true);
   renderCatCarousel();
   renderProducts();
 }
@@ -827,6 +823,7 @@ function setupCarouselObserver(){
         const catId=entry.target.dataset.catId;
         if(catId&&catId!==state.cat){
           state.cat=catId;
+          setCatHeroBg(catId,true);
           items.forEach(it=>it.classList.toggle('active',it.dataset.catId===catId));
           renderProducts();
         }
@@ -836,80 +833,37 @@ function setupCarouselObserver(){
   items.forEach(item=>carouselObserver.observe(item));
 }
 
-let deckObserver=null;
-
-// Un producto por pantalla, deslizás al costado para pasar al siguiente (en vez de la lista
-// vertical de antes) — mismo mecanismo de scroll-snap que ya usa el carrusel de categorías
-// de arriba, así que la sensación de "desliza y engancha" es igual en los dos.
+// Lista normal de productos de la categoría activa (la cabecera de arriba, con la foto
+// grande de la categoría, es la que ahora hace de "swipe" — acá abajo es una lista fija
+// que se scrollea vertical como cualquier lista).
 function renderProducts(){
   const items=itemsOf(state.cat);
   const cat=CATS.find(c=>c.id===state.cat);
   const el=document.getElementById('productsList');el.innerHTML='';
-  items.forEach((it,i)=>el.appendChild(renderProductSlide(it,cat,i)));
+  items.forEach(it=>el.appendChild(renderProductCard(it)));
   // En mesa no se arma pedido desde acá (lo toma la moza a mano), así que estas tarjetas de
   // "armá tu pedido" (mitad y mitad / docena) no tienen sentido — solo aplican a retiro/envío.
-  if(state.canal!=='mesa'){
-    if(cat.half)el.appendChild(wrapSpecialSlide(renderHalfCard(cat)));
-    if(cat.docena)el.appendChild(wrapSpecialSlide(renderDocenaCard(cat)));
-  }
-  el.scrollLeft=0;
-  renderDeckDots(items.length + (state.canal!=='mesa'&&cat.half?1:0) + (state.canal!=='mesa'&&cat.docena?1:0));
-  setupDeckObserver();
+  if(state.canal==='mesa')return;
+  if(cat.half)el.appendChild(renderHalfCard(cat));
+  if(cat.docena)el.appendChild(renderDocenaCard(cat));
 }
 
-// Las tarjetas de "mitad y mitad"/"por docena" ya tienen su propio diseño (selects, no una
-// foto) — se insertan igual como una pantalla más del deck, solo que sin fondo de foto.
-function wrapSpecialSlide(card){
-  const slide=document.createElement('div');
-  slide.className='product-slide special-slide';
-  slide.appendChild(card);
-  return slide;
-}
-
-function renderDeckDots(count){
-  const el=document.getElementById('deckDots');
-  if(count<=1){el.innerHTML='';return}
-  el.innerHTML=Array.from({length:count},(_,i)=>`<span data-i="${i}"${i===0?' class="active"':''}></span>`).join('');
-}
-
-// Detecta qué pantalla quedó centrada al deslizar, para actualizar los puntitos de abajo —
-// mismo patrón que setupCarouselObserver() para las categorías de arriba.
-function setupDeckObserver(){
-  if(deckObserver)deckObserver.disconnect();
-  const deck=document.getElementById('productsList');
-  if(!deck)return;
-  const slides=deck.querySelectorAll('.product-slide');
-  const dots=document.getElementById('deckDots').querySelectorAll('span');
-  deckObserver=new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting&&entry.intersectionRatio>=0.6){
-        const idx=Array.from(slides).indexOf(entry.target);
-        dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
-      }
-    });
-  },{root:deck,threshold:[0.6]});
-  slides.forEach(s=>deckObserver.observe(s));
-}
-
-function renderProductSlide(it,cat,i){
-  const slide=document.createElement('div');slide.className='product-slide';
+function renderProductCard(it){
+  const card=document.createElement('div');card.className='product-card';
   const soloLectura=state.canal==='mesa';
   const entry=state.cart[it.id]||{qty:0,note:''};
-  const foto=CAT_IMAGES[cat.id]||CAT_IMAGES.pizzas;
-  slide.innerHTML=`<div class="slide-bg" style="background-image:url('${foto}')"></div>
-    <div class="slide-tint"></div>
-    <div class="slide-photo"><img src="${foto}" alt="${cat.name}" loading="${i===0?'eager':'lazy'}"></div>
-    <div class="slide-body">
-      <strong>${it.name}</strong>
-      ${it.desc?`<div class="desc">${it.desc}</div>`:''}
-      ${it.video?`<button class="video-link" onclick="verVideo('${it.video}','${it.name}')">▶ Ver video</button>`:''}
-      <div class="price">${fmt(it.price)}</div>
-    </div>
-    <div class="slide-actions">
-      ${soloLectura?'':`<div id="stepper-${it.id}"></div><div id="noteArea-${it.id}"></div>`}
-    </div>`;
+  card.innerHTML=`<div class="product-info">
+    <strong>${it.name}</strong>
+    <div class="desc">${it.desc||''}</div>
+    ${it.video?`<button class="video-link" onclick="verVideo('${it.video}','${it.name}')">▶ Ver video</button>`:''}
+    <div class="price">${fmt(it.price)}</div>
+    ${soloLectura?'':`<div id="noteArea-${it.id}"></div>`}
+  </div>
+  ${soloLectura?'':`<div class="product-actions">
+    <div id="stepper-${it.id}"></div>
+  </div>`}`;
   if(!soloLectura)setTimeout(()=>{renderStepper(it.id,entry.qty);renderNoteArea(it.id,entry)},0);
-  return slide;
+  return card;
 }
 
 // El <video> no existe en el HTML hasta que se toca "Ver video" — así no se descarga
