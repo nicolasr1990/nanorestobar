@@ -150,9 +150,11 @@
      manda setStaticCat/goToCat por JS) para que no se note como una franja de otro color
      pegada arriba del degradado de la categoría — mismo tinte oscuro de siempre, solo que
      ahora con la foto detrás en vez de un fondo liso genérico. */
-  #catTopbar{background-color:transparent;background-size:cover;background-position:center;transition:background-image 0.3s ease}
-  #catTopbar::before{content:'';position:absolute;inset:0;z-index:-1;background:rgba(20,14,11,0.55)}
-  #catTopbar{position:sticky}
+  /* Sin borde propio: así no queda una raya entre la topbar y el degradado de la categoría
+     de abajo — son la misma foto (ver .cat-backdrop más abajo, que ahora arranca desde el
+     borde de arriba de la pantalla) y el propio backdrop-filter:blur de la topbar la
+     desenfoca en vivo, sin necesidad de pintarla dos veces. */
+  #catTopbar{border-bottom:none}
   .topbar-back{width:36px;height:36px;border-radius:50%;background:rgba(20,16,13,0.55);backdrop-filter:blur(12px) saturate(160%);-webkit-backdrop-filter:blur(12px) saturate(160%);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.92);transition:var(--transition);flex-shrink:0;box-shadow:var(--shadow-sm);filter:drop-shadow(0 1px 3px rgba(0,0,0,0.5))}
   .topbar-back:hover{background:var(--surface-hover);color:var(--text)}
   .topbar-spacer{flex:1}
@@ -166,8 +168,12 @@
      desliza en diagonal al cambiar, con miniaturas "espía" de la categoría anterior/siguiente
      a los costados, y un botón que abre una bandeja inferior con la lista de productos). */
   #menuContent{position:relative}
+  /* Arranca desde el borde de arriba de la pantalla (detrás de la topbar, que va sticky
+     encima) — así la topbar y la franja de la categoría son la MISMA foto, sin costura:
+     la topbar no pinta nada propio, solo desenfoca en vivo lo que tiene detrás con su
+     backdrop-filter de siempre. */
   .cat-backdrop{
-    position:absolute;inset:-10% -10% auto -10%;height:58vh;z-index:0;
+    position:absolute;inset:0 -10% auto -10%;height:44vh;z-index:0;
     background-size:cover;background-position:center;filter:blur(38px) saturate(130%) brightness(0.5);
     transform:scale(1.15);opacity:1;transition:opacity 0.5s ease;
   }
@@ -175,19 +181,21 @@
     content:'';position:absolute;inset:0;
     background:linear-gradient(180deg,rgba(10,11,13,0.08) 0%,var(--bg) 94%);
   }
-  .cat-index{position:relative;z-index:2;text-align:center;padding-top:10px;font-size:11.5px;letter-spacing:0.06em;color:var(--text-secondary)}
+  .cat-index{position:relative;z-index:2;text-align:center;padding-top:10px;font-size:12px;letter-spacing:0.06em;color:var(--text);opacity:0.85;text-shadow:0 2px 8px rgba(0,0,0,0.55)}
 
-  .cat-plate-zone{position:relative;z-index:2;height:36vh;margin-top:4vh;touch-action:pan-y}
+  /* Más chico y más arriba que antes: la lista de productos ahora va siempre visible
+     debajo (no hace falta tocar "Ver productos"), así que el plato le deja lugar. */
+  .cat-plate-zone{position:relative;z-index:2;height:23vh;margin-top:2vh;touch-action:pan-y}
   .cat-plate{
-    position:absolute;top:50%;left:50%;width:64vw;max-width:270px;height:64vw;max-height:270px;
+    position:absolute;top:50%;left:50%;width:46vw;max-width:190px;height:46vw;max-height:190px;
     border-radius:50%;background-size:cover;background-position:center;
     border:3px solid var(--glass-border-hover);box-shadow:var(--shadow-md);
     transition:transform 0.55s cubic-bezier(0.22,1,0.36,1),opacity 0.55s ease,filter 0.55s ease;
     cursor:grab;z-index:2;
   }
   /* Centrado con translate(-50%,-50%) en vez de margin fijo: un margin en px asume que el
-     plato mide siempre 270px, pero su ancho real es min(64vw,270px) — en pantallas donde
-     64vw da menos de 270px quedaba corrido del centro. La diagonal se suma arriba con calc(). */
+     plato mide siempre un ancho fijo, pero su ancho real es min(46vw,190px) — en pantallas
+     donde 46vw da menos de 190px quedaba corrido del centro. La diagonal se suma con calc(). */
   .cat-plate.enter-from-br{transform:translate(calc(-50% + 46%),calc(-50% + 34%)) scale(0.55);opacity:0;filter:blur(10px);z-index:1}
   .cat-plate.exit-to-tl{transform:translate(calc(-50% - 46%),calc(-50% - 34%)) scale(0.55);opacity:0;filter:blur(10px)}
   .cat-plate.enter-from-bl{transform:translate(calc(-50% - 46%),calc(-50% + 34%)) scale(0.55);opacity:0;filter:blur(10px);z-index:1}
@@ -195,39 +203,25 @@
   .cat-plate.center{transform:translate(-50%,-50%) scale(1);opacity:1;filter:blur(0)}
 
   .cat-peek{
-    position:absolute;top:50%;z-index:3;width:54px;height:54px;margin-top:-27px;border-radius:50%;overflow:hidden;
+    position:absolute;top:50%;z-index:3;width:48px;height:48px;margin-top:-24px;border-radius:50%;overflow:hidden;
     border:2px solid var(--glass-border);opacity:0.5;filter:blur(1px) brightness(0.75);cursor:pointer;
     transition:opacity 0.25s,filter 0.25s,transform 0.25s;
   }
   .cat-peek img{width:100%;height:100%;object-fit:cover;display:block}
   .cat-peek:hover,.cat-peek:active{opacity:0.85;filter:blur(0) brightness(0.95)}
-  .cat-peek.prev{left:8px;transform:scale(0.9)}
-  .cat-peek.next{right:8px;transform:scale(0.9)}
+  .cat-peek.prev{left:10px;transform:scale(0.9)}
+  .cat-peek.next{right:10px;transform:scale(0.9)}
 
-  .cat-name-block{position:relative;z-index:2;text-align:center;margin-top:18px;transition:transform 0.4s ease,opacity 0.4s ease}
+  .cat-name-block{position:relative;z-index:2;text-align:center;margin-top:14px;transition:transform 0.4s ease,opacity 0.4s ease}
   .cat-name-block h1{font-family:var(--display);font-size:22px;font-weight:700}
-  .cat-swipe-hint{position:relative;z-index:2;text-align:center;margin-top:10px;font-size:11px;color:var(--text-muted)}
-  .cat-open-btn{display:block;position:relative;z-index:2;margin:20px auto 26px;width:calc(100% - 36px)}
-
-  .cat-sheet{
-    position:fixed;left:0;right:0;bottom:0;max-width:430px;margin:0 auto;z-index:60;height:76vh;
-    background:var(--bg-elevated);border-radius:26px 26px 0 0;border:1px solid var(--glass-border);border-bottom:none;
-    transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.32,0.72,0,1);
-    box-shadow:0 -20px 50px rgba(0,0,0,0.45);
-  }
-  .cat-sheet.open{transform:translateY(0)}
-  .cat-sheet-handle{width:38px;height:4px;background:var(--glass-border-hover);border-radius:99px;margin:12px auto 4px}
-  .cat-sheet-header{display:flex;justify-content:space-between;align-items:center;padding:10px 18px 14px;border-bottom:1px solid var(--glass-border)}
-  .cat-sheet-header h2{font-family:var(--display);font-size:18px;font-weight:700}
-  .cat-sheet-close{width:30px;height:30px;border-radius:50%;background:var(--surface-hover);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text)}
-  .cat-sheet-close svg{width:14px;height:14px}
-  .cat-sheet-list-wrap{padding:6px 0 24px;overflow-y:auto;height:calc(100% - 62px)}
+  .cat-swipe-hint{position:relative;z-index:2;text-align:center;margin-top:8px;font-size:11.5px;color:var(--text-secondary);text-shadow:0 1px 6px rgba(0,0,0,0.4)}
 
   /* Product List - TEXT ONLY */
   .products-header{display:flex;align-items:center;justify-content:space-between;padding:0 18px 12px}
   .products-header h3{font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:-0.01em}
   .products-header .count{font-size:12px;color:var(--text-muted);font-weight:500}
-  .products-list{padding:0 18px;display:flex;flex-direction:column;gap:10px}
+  .section-divider{position:relative;z-index:2;height:1px;background:linear-gradient(90deg,transparent,var(--glass-border),transparent);margin:6px 18px 14px}
+  .products-list{position:relative;z-index:2;padding:0 18px;display:flex;flex-direction:column;gap:10px}
 
   .product-card{
     border-radius:var(--radius-lg);position:relative;
@@ -429,6 +423,8 @@
 </div>
 
 <div class="screen" id="screen-menu">
+  <div class="cat-backdrop" id="catBackdrop"></div>
+
   <div class="topbar" id="catTopbar">
     <button class="topbar-back" onclick="volverDesdeMenu()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -443,7 +439,6 @@
   <div id="menuStatus" class="menu-status" style="display:none;"></div>
 
   <div id="menuContent">
-    <div class="cat-backdrop" id="catBackdrop"></div>
     <div class="cat-index" id="catIndex"></div>
 
     <div class="cat-plate-zone" id="catPlateZone">
@@ -453,20 +448,10 @@
 
     <div class="cat-name-block" id="catNameBlock"></div>
     <div class="cat-swipe-hint">Deslizá o tocá una miniatura del costado</div>
-    <button class="cta cat-open-btn" id="catOpenBtn">Ver productos</button>
-  </div>
 
-  <div class="cat-sheet" id="catSheet">
-    <div class="cat-sheet-handle"></div>
-    <div class="cat-sheet-header">
-      <h2 id="catSheetTitle"></h2>
-      <div class="cat-sheet-close" id="catSheetClose">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-      </div>
-    </div>
-    <div class="cat-sheet-list-wrap">
-      <div class="products-list" id="productsList"></div>
-    </div>
+    <div class="section-divider"></div>
+
+    <div class="products-list" id="productsList"></div>
   </div>
 </div>
 
@@ -844,10 +829,8 @@ function setStaticCat(catId){
   if(!cat)return;
   document.getElementById('catBackdrop').style.backgroundImage=`url('${catFoto(cat.id)}')`;
   document.getElementById('catBackdrop').style.opacity='1';
-  document.getElementById('catTopbar').style.backgroundImage=`url('${catFoto(cat.id)}')`;
   document.getElementById('catIndex').textContent=`${catIndexOf(catId)+1} / ${CATS.length}`;
   document.getElementById('catNameBlock').innerHTML=`<h1>${cat.name}</h1>`;
-  document.getElementById('catSheetTitle').textContent=cat.name;
 
   const zone=document.getElementById('catPlateZone');
   zone.querySelectorAll('.cat-plate').forEach(p=>p.remove());
@@ -902,12 +885,10 @@ function goToCat(catId,direction){
     state.cat=catId;
     document.getElementById('catBackdrop').style.backgroundImage=`url('${catFoto(nextCat.id)}')`;
     document.getElementById('catBackdrop').style.opacity='1';
-    document.getElementById('catTopbar').style.backgroundImage=`url('${catFoto(nextCat.id)}')`;
     document.getElementById('catIndex').textContent=`${catIndexOf(catId)+1} / ${CATS.length}`;
     nameBlock.innerHTML=`<h1>${nextCat.name}</h1>`;
     nameBlock.style.transform='translateY(0)';
     requestAnimationFrame(()=>{ nameBlock.style.opacity='1'; });
-    document.getElementById('catSheetTitle').textContent=nextCat.name;
     renderProducts();
     outgoing.remove();
     updateCatPeeks(catId);
@@ -918,13 +899,8 @@ function goToCat(catId,direction){
 function goNextCat(){ const i=catIndexOf(state.cat); goToCat(CATS[(i+1)%CATS.length].id,'next'); }
 function goPrevCat(){ const i=catIndexOf(state.cat); goToCat(CATS[(i-1+CATS.length)%CATS.length].id,'prev'); }
 
-function openCatSheet(){ document.getElementById('catSheet').classList.add('open'); }
-function closeCatSheet(){ document.getElementById('catSheet').classList.remove('open'); }
-
 document.getElementById('catPeekNext').addEventListener('click',goNextCat);
 document.getElementById('catPeekPrev').addEventListener('click',goPrevCat);
-document.getElementById('catOpenBtn').addEventListener('click',openCatSheet);
-document.getElementById('catSheetClose').addEventListener('click',closeCatSheet);
 
 // Arrastrar el plato (dedo o mouse) dispara la misma transición diagonal que las miniaturas.
 (function(){
