@@ -88,6 +88,25 @@
   .pay-opt.active{border-color:var(--accent);color:var(--text);background:rgba(221,147,80,0.18)}
   .cart-error{margin:14px 18px 0;padding:10px 14px;border-radius:var(--radius-md);background:rgba(220,70,60,0.12);border:1px solid rgba(220,70,60,0.3);color:#ff9b8f;font-size:12px}
 
+  /* Alias de transferencia — bien llamativo, es lo primero que ve el cliente al elegir
+     "Transferencia", antes de pedirle el comprobante. */
+  .alias-box{
+    margin:0 18px 14px;padding:14px 16px;border-radius:var(--radius-lg);
+    background:linear-gradient(135deg,rgba(221,147,80,0.20),rgba(185,106,66,0.10));
+    border:1.5px solid rgba(221,147,80,0.5);box-shadow:var(--shadow-sm);
+  }
+  .alias-label{font-size:10.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px}
+  .alias-value{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .alias-value span{font-family:var(--display);font-size:19px;font-weight:800;color:var(--accent-light);letter-spacing:-0.01em;word-break:break-all}
+  .alias-copy-btn{
+    background:rgba(255,255,255,0.12);border:1px solid var(--glass-border);color:var(--text);
+    padding:7px 13px;border-radius:var(--radius-sm);font-size:11.5px;font-weight:600;cursor:pointer;
+    transition:var(--transition);flex-shrink:0;
+  }
+  .alias-copy-btn:hover{background:var(--surface-hover)}
+  .alias-copy-btn.copied{background:var(--success);color:#08210f;border-color:var(--success)}
+  .alias-titular{font-size:11.5px;color:var(--text-secondary);margin-top:4px}
+
   /* ===== Código de verificación: 4 casilleros que se abren en abanico al completarse y
      se juntan en uno solo para el "sello" de verificando/confirmado. ===== */
   .otp-wrap{position:relative;margin-top:26px;height:64px;display:flex;align-items:center;justify-content:center}
@@ -478,6 +497,14 @@
       <button class="pay-opt" id="payTransferencia" onclick="elegirPago('transferencia')">Transferencia</button>
     </div>
     <div id="comprobanteWrap" style="display:none;margin-top:10px;">
+      <div class="alias-box">
+        <div class="alias-label">Transferí a este alias</div>
+        <div class="alias-value">
+          <span id="aliasTexto"></span>
+          <button type="button" class="alias-copy-btn" id="aliasCopyBtn" onclick="copiarAlias(this)">Copiar</button>
+        </div>
+        <div class="alias-titular" id="aliasTitular"></div>
+      </div>
       <div class="field-label">Comprobante de la transferencia</div>
       <input type="file" id="comprobanteInput" accept="image/*,application/pdf" class="field-input" style="padding:11px 12px;" onchange="handleComprobanteChange(this)">
       <div id="comprobantePreview" style="font-size:11.5px;color:var(--text-secondary);margin:2px 18px 0;"></div>
@@ -567,6 +594,11 @@ const CONFIG = {
   SUPABASE_ANON_KEY: 'sb_publishable_rsbuuHshmfgdYfNK9Ir2Hg_QtAHbTQV',
   // Costo fijo de envío a domicilio. Se suma al total solo cuando el canal es "envio".
   COSTO_ENVIO: 1000,
+  // Alias de Mercado Pago para transferencias — se muestra bien grande apenas el cliente
+  // elige "Transferencia", antes de pedirle que suba el comprobante (así sabe adónde
+  // mandar la plata sin tener que preguntarle al mozo).
+  ALIAS_TRANSFERENCIA: 'nanorestobar.mp',
+  TITULAR_TRANSFERENCIA: 'Contin Fernando',
 };
 const SUPABASE_HEADERS = { apikey: CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + CONFIG.SUPABASE_ANON_KEY };
 
@@ -1180,12 +1212,24 @@ function elegirPago(metodo){
   document.getElementById('payEfectivo').classList.toggle('active',metodo==='efectivo');
   document.getElementById('payTransferencia').classList.toggle('active',metodo==='transferencia');
   document.getElementById('comprobanteWrap').style.display=metodo==='transferencia'?'block':'none';
-  if(metodo!=='transferencia'){
+  if(metodo==='transferencia'){
+    document.getElementById('aliasTexto').textContent=CONFIG.ALIAS_TRANSFERENCIA;
+    document.getElementById('aliasTitular').textContent=CONFIG.TITULAR_TRANSFERENCIA;
+  }else{
     state.comprobante=null;
     document.getElementById('comprobanteInput').value='';
     document.getElementById('comprobantePreview').textContent='';
   }
   renderBottombar('cart');
+}
+
+function copiarAlias(btn){
+  navigator.clipboard.writeText(CONFIG.ALIAS_TRANSFERENCIA).then(()=>{
+    const original=btn.textContent;
+    btn.textContent='¡Copiado!';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent=original; btn.classList.remove('copied'); },1600);
+  }).catch(()=>{});
 }
 
 // Una foto de comprobante sacada con el celular puede pesar varios MB sin necesidad —
