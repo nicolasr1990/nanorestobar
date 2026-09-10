@@ -153,6 +153,8 @@
   }
   .selector-opt:nth-child(2){animation-delay:1.08s}
   .selector-opt:active{transform:scale(0.97);border-color:rgba(221,147,80,0.4)}
+  .selector-opt:disabled{opacity:0.45!important;cursor:not-allowed;filter:grayscale(0.3)}
+  .selector-opt:disabled:active{transform:none}
   .selector-opt-icon{font-size:26px;flex-shrink:0}
   .selector-opt-text{display:flex;flex-direction:column;gap:2px}
   .selector-opt-text b{font-family:var(--display);font-size:14.5px;color:var(--text);font-weight:600}
@@ -417,15 +419,16 @@
     <div class="greeting-script" style="font-size:32px;">¿Cómo querés<br>hacer tu pedido?</div>
     <div class="greeting-sub">elegí una opción para ver el menú</div>
     <div class="selector-options">
-      <button class="selector-opt" onclick="elegirCanal('retiro')">
+      <button class="selector-opt" id="selectorRetiroBtn" onclick="elegirCanal('retiro')">
         <span class="selector-opt-icon">🏠</span>
         <span class="selector-opt-text"><b>Retiro en el local</b><small>Pedís y pasás a buscarlo</small></span>
       </button>
-      <button class="selector-opt" onclick="elegirCanal('envio')">
+      <button class="selector-opt" id="selectorEnvioBtn" onclick="elegirCanal('envio')">
         <span class="selector-opt-icon">🛵</span>
         <span class="selector-opt-text"><b>Envío a domicilio</b><small id="envioCostoAviso">Te lo llevamos hasta tu casa</small></span>
       </button>
     </div>
+    <div class="landing-note" id="horarioCerradoAviso" style="display:none"></div>
     <div class="landing-note">¿Estás en una mesa del local? Escaneá el QR que está en tu mesa en vez de usar este link.</div>
   </div>
 </div>
@@ -600,6 +603,44 @@ const CONFIG = {
   ALIAS_TRANSFERENCIA: 'nanorestobar.mp',
   TITULAR_TRANSFERENCIA: 'Contin Fernando',
 };
+
+// ---------- Horario de atención para pedidos por retiro/envío ----------
+// Mesa no pasa por acá — el cliente ya está físicamente en el local, así que ese horario no
+// aplica. El panel tampoco lo respeta (crearPedidoPanel no lo valida a propósito): el dueño
+// pidió poder cargar un pedido a mano fuera de horario si hace falta.
+//
+// Cambia en verano — cuando el dueño avise el horario nuevo, se edita este objeto (0=domingo
+// ... 6=sábado) y se sube de nuevo, mismo mecanismo que el resto del código de acá.
+// Cada franja es [inicio, fin] en minutos desde las 00:00 de ESE día. Si el turno cruza la
+// medianoche (viernes/sábado hasta la 1am), el fin se anota pasado las 24h (25:00 = 1500).
+const HORARIO_RETIRO_ENVIO = {
+  0: [[1200, 1440]],             // domingo: noche 20:00 a 00:00 (sin turno mediodía)
+  1: [[690, 870], [1200, 1440]], // lunes: mediodía 11:30-14:30, noche 20:00-00:00
+  2: [[690, 870], [1200, 1440]], // martes
+  3: [[690, 870], [1200, 1440]], // miércoles
+  4: [[690, 870], [1200, 1440]], // jueves
+  5: [[690, 870], [1200, 1500]], // viernes: noche 20:00 a la 01:00
+  6: [[690, 870], [1200, 1500]], // sábado: noche 20:00 a la 01:00
+};
+const HORARIO_RETIRO_ENVIO_TEXTO = 'Lunes a sábado de 11:30 a 14:30 hs · Domingo a jueves de 20:00 a 00:00 hs · Viernes y sábados de 20:00 a 01:00 hs.';
+
+function diaYMinutosArt(fecha){
+  const partes = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Argentina/Buenos_Aires', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  }).formatToParts(fecha);
+  const mapa = {}; partes.forEach(p => mapa[p.type] = p.value);
+  const dias = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+  return { dia: dias[mapa.weekday], minutos: Number(mapa.hour) * 60 + Number(mapa.minute) };
+}
+
+function estaAbiertoRetiroEnvio(fecha = new Date()){
+  const { dia, minutos } = diaYMinutosArt(fecha);
+  if ((HORARIO_RETIRO_ENVIO[dia] || []).some(([ini, fin]) => minutos >= ini && minutos < fin)) return true;
+  // Turno de ayer que cruza la medianoche (ej. viernes 20:00-01:00 sigue abierto ya entrado
+  // el sábado, hasta la 1am).
+  const diaAyer = (dia + 6) % 7;
+  return (HORARIO_RETIRO_ENVIO[diaAyer] || []).some(([, fin]) => fin > 1440 && minutos < (fin - 1440));
+}
 const SUPABASE_HEADERS = { apikey: CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + CONFIG.SUPABASE_ANON_KEY };
 
 // La mesa y el token llegan por la URL del QR: https://tu-sitio/?mesa=6&t=a91f3c2b
@@ -816,8 +857,22 @@ function renderMenuStatus(){
 }
 
 function volverDesdeMenu(){
+  if(state.canal !== 'mesa') renderSelectorHorario();
   goTo(state.canal === 'mesa' ? 'landing' : 'selector');
 }
+
+// Prende/apaga los botones de Retiro/Envío según el horario de atención. Se llama cada vez
+// que se muestra el selector, y de yapa cada 60s por si alguien deja la pestaña abierta
+// justo cuando cambia de horario (ej. a las 14:30).
+function renderSelectorHorario(){
+  const abierto = estaAbiertoRetiroEnvio();
+  document.getElementById('selectorRetiroBtn').disabled = !abierto;
+  document.getElementById('selectorEnvioBtn').disabled = !abierto;
+  const aviso = document.getElementById('horarioCerradoAviso');
+  aviso.style.display = abierto ? 'none' : 'block';
+  aviso.textContent = abierto ? '' : `Por ahora estamos cerrados para pedidos por acá 💛 Nuestro horario es: ${HORARIO_RETIRO_ENVIO_TEXTO}`;
+}
+setInterval(() => { if(document.getElementById('screen-selector').classList.contains('active')) renderSelectorHorario(); }, 60000);
 
 // El cliente eligió "retiro" o "envío" desde el selector (cuando entró sin QR de mesa).
 function elegirCanal(canal){
@@ -1429,7 +1484,12 @@ function confirmarPedido(){
   }).then(data=>{
     solicitudEnCurso=false;
     if(!data.ok){
-      errEl.textContent='No pudimos enviar el pedido. Probá de nuevo en un momento.';
+      // fuera_de_horario no debería pasar casi nunca (nanorestobar ya avisa antes de llegar
+      // a este punto, ver renderSelectorHorario) — pero puede darse si alguien dejó la
+      // pestaña abierta justo cuando cambió el horario.
+      errEl.textContent = data.error==='fuera_de_horario'
+        ? `Justo se cerró el horario de pedidos. ${HORARIO_RETIRO_ENVIO_TEXTO}`
+        : 'No pudimos enviar el pedido. Probá de nuevo en un momento.';
       errEl.style.display='block';
       renderBottombar('cart');
       return;
@@ -1593,6 +1653,7 @@ function mostrarPedidoConfirmado(){
 function resetDemo(){
   const canal = state.canal;
   state={cat:'pizzas',cart:{},comboCart:[],cuenta:[],mesa:state.mesa,token:state.token,sesion:state.sesion,canal,metodoPago:null};
+  if(canal !== 'mesa') renderSelectorHorario();
   goTo(canal === 'mesa' ? 'landing' : 'selector');
 }
 
@@ -1621,6 +1682,7 @@ function validarMesaAlCargar(){
   if(!MESA_URL){
     document.querySelectorAll('#app .screen').forEach(s=>s.classList.remove('active'));
     document.getElementById('screen-selector').classList.add('active');
+    renderSelectorHorario();
     return;
   }
 
