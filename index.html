@@ -831,6 +831,18 @@ let solicitudEnCurso=false;
 
 function fmt(n){return "$"+Math.round(n).toLocaleString("es-AR")}
 function itemsOf(catId){return MENU[catId].map(i=>({...i,catId}))}
+
+// Categorías (o productos puntuales) donde la cocina necesita sí o sí una aclaración para
+// prepararlo — si no se elige, se cocina "a ciegas" y después hay que volver a preguntarle
+// al cliente. A diferencia de la "aclaración" de texto libre (que es opcional), esto es
+// obligatorio antes de poder confirmar el pedido.
+function opcionesRequeridas(catId,nombre){
+  if(catId==='empanadas')return['Al horno','Fritas'];
+  if(catId==='milanesas')return['De carne','De pollo'];
+  if(catId==='pastas')return['Con salsa de estofado de carne','Con salsa bolognesa','Con salsa de crema'];
+  if(catId==='postres'&&/budin/i.test(nombre||''))return['Con crema','Con dulce de leche'];
+  return null;
+}
 function findItem(id){for(const c in MENU){const f=MENU[c].find(i=>i.id===id);if(f)return{...f,catId:c}}}
 
 function openMenu(){
@@ -1071,17 +1083,31 @@ function renderStepper(id,qty){
 function renderNoteArea(id,entry){
   const holder=document.getElementById('noteArea-'+id);if(!holder)return;
   if(entry.qty===0){holder.innerHTML='';return}
+  const it=findItem(id);
+  const opciones=opcionesRequeridas(it.catId,it.name);
+  const opcionHtml=opciones?`<select class="note-input-sm" onchange="saveOpcion('${id}',this.value)">
+      <option value="" disabled ${entry.opcion?'':'selected'}>Elegí una opción (obligatorio)</option>
+      ${opciones.map(o=>`<option value="${o}" ${entry.opcion===o?'selected':''}>${o}</option>`).join('')}
+    </select>`:'';
+  let notaHtml;
   if(entry.showInput){
-    holder.innerHTML=`<input class="note-input-sm" placeholder="Ej: sin cebolla, bien cocido..." value="${entry.note||''}" onblur="saveNote('${id}',this.value)">`;
-    setTimeout(()=>{const inp=holder.querySelector('input');if(inp)inp.focus()},0);
+    notaHtml=`<input class="note-input-sm" placeholder="Ej: sin cebolla, bien cocido..." value="${entry.note||''}" onblur="saveNote('${id}',this.value)">`;
   }else if(entry.note){
-    holder.innerHTML=`<span class="note-chip-sm">📝 ${entry.note}</span> <button class="note-link-sm" style="display:inline;" onclick="toggleNote('${id}')">editar aclaración</button>`;
+    notaHtml=`<span class="note-chip-sm">📝 ${entry.note}</span> <button class="note-link-sm" style="display:inline;" onclick="toggleNote('${id}')">editar aclaración</button>`;
   }else{
-    holder.innerHTML=`<button class="note-link-sm" onclick="toggleNote('${id}')">＋ agregar aclaración</button>`;
+    notaHtml=`<button class="note-link-sm" onclick="toggleNote('${id}')">＋ agregar aclaración</button>`;
   }
+  holder.innerHTML=opcionHtml+notaHtml;
+  if(entry.showInput)setTimeout(()=>{const inp=holder.querySelector('input');if(inp)inp.focus()},0);
 }
 function toggleNote(id){state.cart[id].showInput=true;renderNoteArea(id,state.cart[id])}
 function saveNote(id,val){if(!state.cart[id])return;state.cart[id].note=val.trim();state.cart[id].showInput=false;renderNoteArea(id,state.cart[id])}
+function saveOpcion(id,val){
+  if(!state.cart[id])return;
+  state.cart[id].opcion=val;
+  renderNoteArea(id,state.cart[id]);
+  renderBottombar(document.getElementById('screen-cart').classList.contains('active')?'cart':'menu');
+}
 
 function changeQty(id,delta){
   const cur=state.cart[id]||{qty:0,note:''};
@@ -1137,7 +1163,8 @@ function addHalf(catId){
 let docenaState={};
 function renderDocenaCard(cat){
   const opts=itemsOf(cat.id);
-  docenaState[cat.id]={tamano:'docena',mitad:false};
+  const opciones=opcionesRequeridas(cat.id,'');
+  docenaState[cat.id]={tamano:'docena',mitad:false,opcion:''};
   const card=document.createElement('div');
   card.className='half-card';
   card.id='docena-card-'+cat.id;
@@ -1157,6 +1184,12 @@ function renderDocenaCard(cat){
     <div class="half-row" id="docenaBWrap-${cat.id}" style="display:none;">
       <select id="docenaB-${cat.id}" onchange="updateDocenaPrice('${cat.id}')">${opts.map((o,i)=>`<option value="${o.id}" ${i===1?'selected':''}>${o.name}</option>`).join('')}</select>
     </div>
+    ${opciones?`<div class="half-row">
+      <select id="docenaOpcion-${cat.id}" onchange="setDocenaOpcion('${cat.id}',this.value)">
+        <option value="" selected disabled>¿Al horno o fritas? (obligatorio)</option>
+        ${opciones.map(o=>`<option value="${o}">${o}</option>`).join('')}
+      </select>
+    </div>`:''}
     <div class="half-foot">
       <span class="half-price" id="docenaPrice-${cat.id}">${fmt(opts[0].price)}</span>
       <button class="half-add" onclick="addDocena('${cat.id}')">Agregar</button>
@@ -1165,6 +1198,7 @@ function renderDocenaCard(cat){
   setActiveBtn('docenaMitad-off-'+cat.id,['docenaMitad-off-'+cat.id,'docenaMitad-on-'+cat.id]);
   return card;
 }
+function setDocenaOpcion(catId,val){docenaState[catId].opcion=val;}
 function setActiveBtn(activeId,allIds){allIds.forEach(id=>document.getElementById(id)&&document.getElementById(id).classList.toggle('active',id===activeId))}
 function setDocenaSize(catId,tamano){
   docenaState[catId].tamano=tamano;
@@ -1191,6 +1225,7 @@ function updateDocenaPrice(catId){
 function addDocena(catId){
   const st=docenaState[catId];
   const cat=CATS.find(c=>c.id===catId);
+  if(opcionesRequeridas(catId,'')&&!st.opcion){alert('Elegí si las querés al horno o fritas.');return}
   const a=findItem(document.getElementById('docenaA-'+catId).value);
   let base=a.price,nombre=a.name;
   if(st.mitad){
@@ -1202,11 +1237,11 @@ function addDocena(catId){
   const esMedia=st.tamano==='media';
   const price=esMedia?base/2:base;
   const label=(esMedia?'Media docena de ':'Docena de ')+nombre;
-  const key='docena-'+catId+'-'+a.id+'-'+(st.mitad?document.getElementById('docenaB-'+catId).value:'')+'-'+st.tamano;
+  const key='docena-'+catId+'-'+a.id+'-'+(st.mitad?document.getElementById('docenaB-'+catId).value:'')+'-'+st.tamano+'-'+(st.opcion||'');
   const bId=st.mitad?document.getElementById('docenaB-'+catId).value:'';
   const existing=state.comboCart.find(c=>c.key===key);
   if(existing)existing.qty+=1;
-  else state.comboCart.push({key,aId:a.id,bId,esMediaDocena:esMedia,name:label,price,qty:1,catIcon:cat.icon,catName:cat.name});
+  else state.comboCart.push({key,aId:a.id,bId,esMediaDocena:esMedia,name:label,price,qty:1,catIcon:cat.icon,catName:cat.name,desc:st.opcion||''});
   updateCartBadge();renderBottombar('menu');
 }
 
@@ -1225,7 +1260,9 @@ function allCartLines(){
   const regular=Object.entries(state.cart).map(([id,entry])=>{
     const item=findItem(id);
     const cat=CATS.find(c=>c.id===item.catId);
-    return{key:id,name:item.name,desc:entry.note||'',price:item.price,qty:entry.qty,catIcon:cat.icon,catName:cat.name};
+    const opciones=opcionesRequeridas(item.catId,item.name);
+    const desc=[entry.opcion,entry.note].filter(Boolean).join(' · ');
+    return{key:id,name:item.name,desc,price:item.price,qty:entry.qty,catIcon:cat.icon,catName:cat.name,faltaOpcion:!!opciones&&!entry.opcion};
   });
   return[...regular,...state.comboCart];
 }
@@ -1243,7 +1280,8 @@ function renderBottombar(screen){
   }else if(screen==='cart'){
     const lines=allCartLines();const total=totalConEnvio(lines);
     const esMesa=state.canal==='mesa';
-    const listo=lines.length>0 && (esMesa || datosContactoCompletos());
+    const faltanOpciones=lines.some(l=>l.faltaOpcion);
+    const listo=lines.length>0 && (esMesa || datosContactoCompletos()) && !faltanOpciones;
     bar.style.display='flex';
     bar.innerHTML=`<div class="total">Total<b>${fmt(total)}</b></div><button class="cta" ${listo?'':'disabled'} onclick="${esMesa?'sendRound()':'confirmarPedido()'}">${esMesa?'Enviar a cocina':'Confirmar pedido'}</button>`;
   }else{bar.style.display='none'}
@@ -1386,7 +1424,7 @@ function goToCart(){
 function buildItemsForApi(lines){
   return lines.map(l=>{
     if(l.aId){
-      return{producto_id:l.aId,cantidad:l.qty,nota:'',es_mitad_y_mitad:!!l.bId,combinado_con:l.bId||'',es_media_docena:!!l.esMediaDocena};
+      return{producto_id:l.aId,cantidad:l.qty,nota:l.desc||'',es_mitad_y_mitad:!!l.bId,combinado_con:l.bId||'',es_media_docena:!!l.esMediaDocena};
     }
     return{producto_id:l.key,cantidad:l.qty,nota:l.desc||'',es_mitad_y_mitad:false,combinado_con:'',es_media_docena:false};
   });
@@ -1452,7 +1490,7 @@ function askBill(){
 function confirmarPedido(){
   if(solicitudEnCurso)return;
   const lines=allCartLines();
-  if(lines.length===0||!datosContactoCompletos())return;
+  if(lines.length===0||!datosContactoCompletos()||lines.some(l=>l.faltaOpcion))return;
 
   state.nombre=document.getElementById('nombreInput').value.trim();
   state.telefono=document.getElementById('telefonoInput').value.trim();
