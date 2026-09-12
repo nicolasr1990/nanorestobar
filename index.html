@@ -1162,7 +1162,10 @@ function addHalf(catId){
 // unidad") y ya funciona sola con los steppers normales de la lista de arriba.
 let docenaState={};
 function renderDocenaCard(cat){
-  const opts=itemsOf(cat.id);
+  // El producto "por unidad" de la categoría (ej. "EMPANADA POR UNIDAD") no es un sabor para
+  // armar una docena — si se cuela acá, el precio de la docena sale calculado con el precio
+  // por unidad, mal. Se pide por su cuenta desde la lista de arriba, no desde esta tarjeta.
+  const opts=itemsOf(cat.id).filter(o=>!/por unidad/i.test(o.name));
   const opciones=opcionesRequeridas(cat.id,'');
   docenaState[cat.id]={tamano:'docena',mitad:false,opcion:''};
   const card=document.createElement('div');
