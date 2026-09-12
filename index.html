@@ -836,11 +836,25 @@ function itemsOf(catId){return MENU[catId].map(i=>({...i,catId}))}
 // prepararlo — si no se elige, se cocina "a ciegas" y después hay que volver a preguntarle
 // al cliente. A diferencia de la "aclaración" de texto libre (que es opcional), esto es
 // obligatorio antes de poder confirmar el pedido.
+// Devuelve un array de grupos {label, opciones} (uno por cada pregunta obligatoria) o null si
+// el producto no necesita ninguna. La mayoría de los casos tiene un solo grupo (una sola
+// pregunta); "por unidad" es el único que necesita dos (sabor + cocción), porque a diferencia
+// de los otros productos de la categoría no trae el sabor puesto en el nombre.
 function opcionesRequeridas(catId,nombre){
-  if(catId==='empanadas')return['Al horno','Fritas'];
-  if(catId==='milanesas')return['De carne','De pollo'];
-  if(catId==='pastas')return['Con salsa de estofado de carne','Con salsa bolognesa','Con salsa de crema'];
-  if(catId==='postres'&&/budin/i.test(nombre||''))return['Con crema','Con dulce de leche'];
+  if(catId==='empanadas'){
+    const grupos=[{label:'¿Al horno o fritas?',opciones:['Al horno','Fritas']}];
+    if(/por unidad/i.test(nombre||'')){
+      // El sabor se toma de los propios productos "EMPANADAS DE ___" de la categoría (no una
+      // lista fija a mano) — así si mañana se agrega o saca un sabor del menú, el selector de
+      // "por unidad" se actualiza solo.
+      const sabores=itemsOf(catId).filter(i=>!/por unidad/i.test(i.name)).map(i=>i.name);
+      grupos.unshift({label:'Sabor',opciones:sabores});
+    }
+    return grupos;
+  }
+  if(catId==='milanesas')return[{label:'¿De carne o de pollo?',opciones:['De carne','De pollo']}];
+  if(catId==='pastas')return[{label:'Salsa',opciones:['Con salsa de estofado de carne','Con salsa bolognesa','Con salsa de crema']}];
+  if(catId==='postres'&&/budin/i.test(nombre||''))return[{label:'¿Con crema o con dulce de leche?',opciones:['Con crema','Con dulce de leche']}];
   return null;
 }
 function findItem(id){for(const c in MENU){const f=MENU[c].find(i=>i.id===id);if(f)return{...f,catId:c}}}
@@ -1084,11 +1098,12 @@ function renderNoteArea(id,entry){
   const holder=document.getElementById('noteArea-'+id);if(!holder)return;
   if(entry.qty===0){holder.innerHTML='';return}
   const it=findItem(id);
-  const opciones=opcionesRequeridas(it.catId,it.name);
-  const opcionHtml=opciones?`<select class="note-input-sm" onchange="saveOpcion('${id}',this.value)">
-      <option value="" disabled ${entry.opcion?'':'selected'}>Elegí una opción (obligatorio)</option>
-      ${opciones.map(o=>`<option value="${o}" ${entry.opcion===o?'selected':''}>${o}</option>`).join('')}
-    </select>`:'';
+  const grupos=opcionesRequeridas(it.catId,it.name);
+  const opciones=entry.opciones||[];
+  const opcionesHtml=grupos?grupos.map((g,i)=>`<select class="note-input-sm" onchange="saveOpcion('${id}',${i},this.value)">
+      <option value="" disabled ${opciones[i]?'':'selected'}>${g.label} (obligatorio)</option>
+      ${g.opciones.map(o=>`<option value="${o}" ${opciones[i]===o?'selected':''}>${o}</option>`).join('')}
+    </select>`).join(''):'';
   let notaHtml;
   if(entry.showInput){
     notaHtml=`<input class="note-input-sm" placeholder="Ej: sin cebolla, bien cocido..." value="${entry.note||''}" onblur="saveNote('${id}',this.value)">`;
@@ -1097,14 +1112,16 @@ function renderNoteArea(id,entry){
   }else{
     notaHtml=`<button class="note-link-sm" onclick="toggleNote('${id}')">＋ agregar aclaración</button>`;
   }
-  holder.innerHTML=opcionHtml+notaHtml;
+  holder.innerHTML=opcionesHtml+notaHtml;
   if(entry.showInput)setTimeout(()=>{const inp=holder.querySelector('input');if(inp)inp.focus()},0);
 }
 function toggleNote(id){state.cart[id].showInput=true;renderNoteArea(id,state.cart[id])}
 function saveNote(id,val){if(!state.cart[id])return;state.cart[id].note=val.trim();state.cart[id].showInput=false;renderNoteArea(id,state.cart[id])}
-function saveOpcion(id,val){
+function saveOpcion(id,grupoIdx,val){
   if(!state.cart[id])return;
-  state.cart[id].opcion=val;
+  const opciones=(state.cart[id].opciones||[]).slice();
+  opciones[grupoIdx]=val;
+  state.cart[id].opciones=opciones;
   renderNoteArea(id,state.cart[id]);
   renderBottombar(document.getElementById('screen-cart').classList.contains('active')?'cart':'menu');
 }
@@ -1166,7 +1183,10 @@ function renderDocenaCard(cat){
   // armar una docena — si se cuela acá, el precio de la docena sale calculado con el precio
   // por unidad, mal. Se pide por su cuenta desde la lista de arriba, no desde esta tarjeta.
   const opts=itemsOf(cat.id).filter(o=>!/por unidad/i.test(o.name));
-  const opciones=opcionesRequeridas(cat.id,'');
+  // El sabor ya se elige con el desplegable de acá abajo, así que de opcionesRequeridas solo
+  // interesa el grupo de cocción (acá nunca hay un segundo grupo de "sabor", porque el nombre
+  // pasado es '' — el de "por unidad" es el único caso con dos grupos, y no pasa por acá).
+  const grupoCoccion=opcionesRequeridas(cat.id,'')?.[0]||null;
   docenaState[cat.id]={tamano:'docena',mitad:false,opcion:''};
   const card=document.createElement('div');
   card.className='half-card';
@@ -1187,10 +1207,10 @@ function renderDocenaCard(cat){
     <div class="half-row" id="docenaBWrap-${cat.id}" style="display:none;">
       <select id="docenaB-${cat.id}" onchange="updateDocenaPrice('${cat.id}')">${opts.map((o,i)=>`<option value="${o.id}" ${i===1?'selected':''}>${o.name}</option>`).join('')}</select>
     </div>
-    ${opciones?`<div class="half-row">
+    ${grupoCoccion?`<div class="half-row">
       <select id="docenaOpcion-${cat.id}" onchange="setDocenaOpcion('${cat.id}',this.value)">
-        <option value="" selected disabled>¿Al horno o fritas? (obligatorio)</option>
-        ${opciones.map(o=>`<option value="${o}">${o}</option>`).join('')}
+        <option value="" selected disabled>${grupoCoccion.label} (obligatorio)</option>
+        ${grupoCoccion.opciones.map(o=>`<option value="${o}">${o}</option>`).join('')}
       </select>
     </div>`:''}
     <div class="half-foot">
@@ -1263,9 +1283,11 @@ function allCartLines(){
   const regular=Object.entries(state.cart).map(([id,entry])=>{
     const item=findItem(id);
     const cat=CATS.find(c=>c.id===item.catId);
-    const opciones=opcionesRequeridas(item.catId,item.name);
-    const desc=[entry.opcion,entry.note].filter(Boolean).join(' · ');
-    return{key:id,name:item.name,desc,price:item.price,qty:entry.qty,catIcon:cat.icon,catName:cat.name,faltaOpcion:!!opciones&&!entry.opcion};
+    const grupos=opcionesRequeridas(item.catId,item.name);
+    const opciones=entry.opciones||[];
+    const desc=[...opciones,entry.note].filter(Boolean).join(' · ');
+    const faltaOpcion=!!grupos&&grupos.some((g,i)=>!opciones[i]);
+    return{key:id,name:item.name,desc,price:item.price,qty:entry.qty,catIcon:cat.icon,catName:cat.name,faltaOpcion};
   });
   return[...regular,...state.comboCart];
 }
