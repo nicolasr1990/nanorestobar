@@ -1165,7 +1165,7 @@ function addHalf(catId){
   const price=(a.price+b.price)/2;
   const existing=state.comboCart.find(c=>c.aId===a.id&&c.bId===b.id);
   if(existing)existing.qty+=1;
-  else state.comboCart.push({key:'combo-'+a.id+'-'+b.id,aId:a.id,bId:b.id,name:`Mitad ${a.name} / mitad ${b.name}`,price,qty:1,catIcon:CATS.find(c=>c.id===catId).icon,catName:CATS.find(c=>c.id===catId).name});
+  else state.comboCart.push({key:'combo-'+a.id+'-'+b.id,aId:a.id,bId:b.id,name:`Mitad ${a.name} / mitad ${b.name}`,price,qty:1,catIcon:CATS.find(c=>c.id===catId).icon});
   updateCartBadge();renderBottombar('menu');
 }
 
@@ -1261,7 +1261,7 @@ function addDocena(catId){
   const bId=st.mitad?document.getElementById('docenaB-'+catId).value:'';
   const existing=state.comboCart.find(c=>c.key===key);
   if(existing)existing.qty+=1;
-  else state.comboCart.push({key,aId:a.id,bId,esMediaDocena:esMedia,name:label,price,qty:1,catIcon:cat.icon,catName:cat.name,desc:st.opcion||''});
+  else state.comboCart.push({key,aId:a.id,bId,esMediaDocena:esMedia,name:label,price,qty:1,catIcon:cat.icon,desc:st.opcion||''});
   updateCartBadge();renderBottombar('menu');
 }
 
@@ -1284,7 +1284,14 @@ function allCartLines(){
     const opciones=entry.opciones||[];
     const desc=[...opciones,entry.note].filter(Boolean).join(' · ');
     const faltaOpcion=!!grupos&&grupos.some((g,i)=>!opciones[i]);
-    return{key:id,name:item.name,desc,price:item.price,qty:entry.qty,catIcon:cat.icon,catName:cat.name,faltaOpcion};
+    // Los precios de una categoría "por docena" (empanadas, etc.) siempre son por docena —
+    // elegir el sabor directo de la lista (sin pasar por la tarjeta "Armá tu pedido") también
+    // se cobra y se cocina como una docena entera, así que el nombre tiene que decirlo acá
+    // igual que ya lo dice la tarjeta. "Por unidad" es la excepción: ese producto ya se vende
+    // suelto, al mismo precio que figura, y el servidor tampoco le agrega el prefijo.
+    const esPorUnidad=/por unidad/i.test(item.name);
+    const name=(cat.docena&&!esPorUnidad)?'Docena de '+item.name:item.name;
+    return{key:id,name,desc,price:item.price,qty:entry.qty,catIcon:cat.icon,faltaOpcion};
   });
   return[...regular,...state.comboCart];
 }
@@ -1412,7 +1419,7 @@ function goToCart(){
   el.innerHTML=lines.length===0?'<div class="empty-cart">Todavía no agregaste nada</div>'
     :lines.map(l=>`<div class="cart-line">
       <div class="ic">${ic(l.catIcon,18)}</div>
-      <div class="info"><span class="cat-tag">${l.catName}</span><strong>${l.qty}× ${l.name}</strong>${l.desc?`<span class="desc">📝 ${l.desc}</span>`:''}</div>
+      <div class="info"><strong>${l.qty}× ${l.name}</strong>${l.desc?`<span class="desc">📝 ${l.desc}</span>`:''}</div>
       <div class="cart-line-right">
         <div class="price">${fmt(l.price*l.qty)}</div>
         <button class="cart-line-del" onclick="removeCartLine('${l.key}')" aria-label="Quitar">
@@ -1469,7 +1476,7 @@ function sendRound(){
   document.getElementById('ticketBox').innerHTML=`<div class="row"><span>${canalLabel().etiqueta}</span><span>${canalLabel().valor}</span></div>
     <div class="row"><span>RONDA</span><span>#${state.cuenta.length}</span></div>
     <div class="row"><span>HORA</span><span>${time}</span></div><hr>
-    ${lines.map(l=>`<div class="row"><span><span class="row-cat">${l.catName}</span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
+    ${lines.map(l=>`<div class="row"><span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
     <hr><div class="row tot"><span>TOTAL CUENTA</span><span>${fmt(cuentaTotal)}</span></div>
     <div class="status-line">El mozo ve esta ronda al instante en el panel del local.</div>`;
   document.getElementById('confirmActions').innerHTML=`<button class="cta" onclick="backToMenu()">Pedir algo más</button><button class="cta ghost" onclick="askBill()">Pedir la cuenta</button>`;
@@ -1701,7 +1708,7 @@ function mostrarPedidoConfirmado(){
     <div class="row"><span>TEL</span><span>${state.telefono}</span></div>
     ${esEnvio?`<div class="row"><span>DIRECCIÓN</span><span>${state.direccion}</span></div>`:''}
     <div class="row"><span>PAGO</span><span>${state.metodoPago==='efectivo'?'Efectivo al recibir':'Transferencia'}</span></div><hr>
-    ${lines.map(l=>`<div class="row"><span><span class="row-cat">${l.catName}</span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
+    ${lines.map(l=>`<div class="row"><span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
     ${esEnvio?`<div class="row"><span>Costo de envío</span><span>${fmt(costoEnvio())}</span></div>`:''}
     <hr><div class="row tot"><span>TOTAL</span><span>${fmt(total)}</span></div>
     <div class="status-line">Verificado por WhatsApp ✓ · Te avisamos por ese mismo número cuando ${esEnvio?'salga en camino':'esté listo para retirar'}.</div>`;
