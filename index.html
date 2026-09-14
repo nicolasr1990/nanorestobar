@@ -655,16 +655,14 @@ const TOKEN_URL = URL_PARAMS.get('t');
 // mano). No pasa por validarMesa porque no hay ninguna acción sensible que proteger.
 const CARTA_URL = URL_PARAMS.get('carta');
 
-// Fotos de categoría: subí un archivo por categoría a la carpeta /img del repo con estos
-// nombres exactos (jpg o png, cualquiera de los dos funciona por el fallback de abajo).
-// Ej: /img/pizzas.jpg, /img/empanadas.jpg, etc. Mientras no subas el archivo, se muestra
-// automáticamente el ícono de la categoría en vez de la foto (no queda roto).
-const CAT_IMAGES = {};
-['pizzas','empanadas','entradas','ensaladas','milanesas','hamburguesas',
- 'lomitos','miga','pastas','elaborados','postres','bebidas_sin_alcohol',
- 'cervezas','vinos_espumantes'].forEach(id=>{
-  CAT_IMAGES[id] = `${id}.jpg`;
-});
+// Fotos de categoría: subí un archivo a la raíz del repo con el mismo id que tiene la
+// categoría en la base más ".jpg" (ej. categoría "tacos" -> tacos.jpg). Se arma el nombre
+// dinámicamente a partir del id — así una categoría nueva (creada desde el panel) ya intenta
+// buscar su propia foto sola, sin tocar código. Mientras no subas el archivo, el navegador
+// simplemente no pinta nada ahí (fondo vacío, pero no rompe ni muestra la foto de otra
+// categoría por error — antes, sin foto propia, cualquier categoría nueva mostraba la de
+// Pizzas por accidente, porque el fallback apuntaba siempre ahí).
+function catFoto(catId){ return catId + '.jpg'; }
 
 let CATS=[
   {id:'pizzas',name:'Pizzas',icon:'pizza',half:true},
@@ -933,7 +931,6 @@ function renderMenu(){
   updateCartBadge();
 }
 
-function catFoto(catId){ return CAT_IMAGES[catId]||CAT_IMAGES.pizzas; }
 function catIndexOf(catId){ return CATS.findIndex(c=>c.id===catId); }
 
 // Dibuja la categoría activa sin animación (primera carga, o después de un cambio de canal).
