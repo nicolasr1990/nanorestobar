@@ -1141,13 +1141,13 @@ function renderHalfCard(cat){
   const opts=itemsOf(cat.id);
   const card=document.createElement('div');card.className='half-card';
   card.innerHTML=`<div class="htitle">${ic(cat.icon,16)} Mitad y mitad</div>
-    <div class="hsub">Elegí dos sabores para combinar. El precio es el promedio.</div>
+    <div class="hsub">Elegí dos sabores para combinar. Se cobra el precio del sabor más caro.</div>
     <div class="half-row">
       <select id="halfA">${opts.map(o=>`<option value="${o.id}">${o.name}</option>`).join('')}</select>
       <select id="halfB">${opts.map((o,i)=>`<option value="${o.id}" ${i===1?'selected':''}>${o.name}</option>`).join('')}</select>
     </div>
     <div class="half-foot">
-      <span class="half-price" id="halfPrice">${fmt((opts[0].price+opts[1].price)/2)}</span>
+      <span class="half-price" id="halfPrice">${fmt(Math.max(opts[0].price,opts[1].price))}</span>
       <button class="half-add" onclick="addHalf('${cat.id}')">Agregar</button>
     </div>`;
   setTimeout(()=>{document.getElementById('halfA').onchange=document.getElementById('halfB').onchange=()=>updateHalfPrice(cat.id)},0);
@@ -1156,13 +1156,15 @@ function renderHalfCard(cat){
 function updateHalfPrice(catId){
   const a=findItem(document.getElementById('halfA').value);
   const b=findItem(document.getElementById('halfB').value);
-  document.getElementById('halfPrice').textContent=fmt((a.price+b.price)/2);
+  document.getElementById('halfPrice').textContent=fmt(Math.max(a.price,b.price));
 }
 function addHalf(catId){
   const a=findItem(document.getElementById('halfA').value);
   const b=findItem(document.getElementById('halfB').value);
   if(a.id===b.id){alert('Elegí dos sabores distintos.');return}
-  const price=(a.price+b.price)/2;
+  // Se cobra el sabor más caro de los dos, no el promedio — así el que combina el más caro
+  // con uno más barato no termina saliendo más barato que pedirlo entero.
+  const price=Math.max(a.price,b.price);
   const existing=state.comboCart.find(c=>c.aId===a.id&&c.bId===b.id);
   if(existing)existing.qty+=1;
   else state.comboCart.push({key:'combo-'+a.id+'-'+b.id,aId:a.id,bId:b.id,name:`Mitad ${a.name} / mitad ${b.name}`,price,qty:1,catIcon:CATS.find(c=>c.id===catId).icon});
