@@ -2,125 +2,186 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d0c0b">
 <title>Nano Resto Bar · Mesa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Figtree:wght@400;500;600;700&family=Inter:wght@400&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
 <style>
+  /* ===== Sistema visual =====
+     Paleta sacada del logo (negro carbón + dorado de la llama), no inventada: así la app y el
+     cartel del local se sienten la misma marca. Tipografía: Barlow Condensed para títulos
+     (misma familia condensada y recta que "NANO" en el logo) + Figtree para leer. */
   :root{
-    --bg:#0a0b0d; --bg-elevated:#15161a; --surface:rgba(255,255,255,0.05); --surface-hover:rgba(255,255,255,0.10);
-    --glass:rgba(30,24,20,0.34); --glass-border:rgba(255,255,255,0.14); --glass-border-hover:rgba(255,255,255,0.24);
-    --glass-sheen:rgba(255,255,255,0.14);
-    --accent:#dd9350; --accent-light:#f0bc82; --accent-glow:rgba(221,147,80,0.22);
-    --ember:#b96a42; --text:#f3efe9; --text-secondary:#9c9690; --text-muted:#5b5854;
-    --success:#4ade80; --radius-sm:12px; --radius-md:16px; --radius-lg:22px; --radius-xl:28px;
-    --shadow-sm:0 2px 10px rgba(0,0,0,0.35), inset 0 1px 0 var(--glass-sheen);
-    --shadow-md:0 10px 36px rgba(0,0,0,0.45), inset 0 1px 0 var(--glass-sheen);
-    --display:'Space Grotesk',sans-serif; --body:'Inter',-apple-system,sans-serif; --script:'Dancing Script',cursive;
-    --transition:all 0.35s cubic-bezier(0.4,0,0.2,1);
+    color-scheme:dark;
+    --bg:#0d0c0b; --bg-elevated:#1a1714; --surface:rgba(255,246,230,0.05); --surface-hover:rgba(255,246,230,0.09);
+    --glass:rgba(22,19,15,0.58); --glass-strong:rgba(18,15,12,0.78);
+    --glass-border:rgba(255,238,210,0.12); --glass-border-hover:rgba(255,238,210,0.22);
+    --glass-sheen:rgba(255,250,240,0.07);
+    --accent:#f2b233; --accent-light:#ffd27a; --accent-deep:#d9861c; --on-accent:#1c1204;
+    --accent-glow:rgba(242,178,51,0.24); --accent-soft:rgba(242,178,51,0.12); --accent-line:rgba(242,178,51,0.42);
+    --ember:var(--accent-deep);
+    --text:#f6f1e8; --text-secondary:#b8b0a4; --text-muted:#8a8378;
+    --success:#5cd68d; --danger:#ff8f7e; --danger-bg:rgba(230,80,62,0.14); --danger-line:rgba(255,143,126,0.38);
+    --radius-sm:10px; --radius-md:14px; --radius-lg:20px; --radius-xl:26px; --radius-pill:999px;
+    --shadow-sm:0 2px 10px rgba(0,0,0,0.32), inset 0 1px 0 var(--glass-sheen);
+    --shadow-md:0 12px 40px rgba(0,0,0,0.45), inset 0 1px 0 var(--glass-sheen);
+    --display:'Barlow Condensed','Arial Narrow',sans-serif;
+    --body:'Figtree',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --script:'Dancing Script',cursive;
+    /* Curvas de Emil Kowalski: ease-out fuerte para todo lo que entra o responde a un toque,
+       ease-in-out para lo que se mueve en pantalla, curva de iOS para hojas/barras. */
+    --ease-out:cubic-bezier(0.23,1,0.32,1);
+    --ease-in-out:cubic-bezier(0.77,0,0.175,1);
+    --ease-drawer:cubic-bezier(0.32,0.72,0,1);
+    --dur-press:140ms; --dur-fast:200ms; --dur-base:280ms;
+    /* Se mantiene por compatibilidad, pero ya no anima "all": solo lo que realmente cambia. */
+    --transition:transform var(--dur-fast) var(--ease-out),background-color var(--dur-fast) ease,border-color var(--dur-fast) ease,color var(--dur-fast) ease,box-shadow var(--dur-fast) ease,opacity var(--dur-fast) ease;
+    --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-  html{background:#060607}
-  body{margin:0;background:transparent;font-family:var(--body);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:430px;margin:0 auto;position:relative;min-height:100vh}
+  /* touch-action:manipulation saca el doble-toque-para-zoom (y su demora de 300ms) sin
+     bloquear el pellizco para agrandar, que ahora sí queda habilitado para quien lo necesite. */
+  html{background:#070606;touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{margin:0;background:transparent;font-family:var(--body);font-size:15px;line-height:1.5;color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-feature-settings:'ss01'}
+  button,input,select,textarea{font:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:inherit}
+  .wrap{max-width:440px;margin:0 auto;position:relative;min-height:100vh;min-height:100dvh}
   /* Fondo fijo (no se mueve con el scroll): la foto real que el glassmorphism va a desenfocar detrás de cada tarjeta */
   body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
     background-image:url(data:image/jpeg;base64,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);
     background-size:cover;background-position:center top;background-repeat:no-repeat}
   body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
-    background:linear-gradient(180deg,rgba(8,7,7,0.32) 0%,rgba(8,7,7,0.5) 32%,rgba(6,5,5,0.8) 68%,rgba(5,4,4,0.92) 100%)}
-  #app{min-height:100vh;position:relative;overflow-x:hidden;overflow-y:visible;background:transparent}
-  #app::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.35;mix-blend-mode:overlay;
-    background-image:radial-gradient(rgba(255,255,255,0.045) 0.6px,transparent 0.6px);background-size:3px 3px}
-  #app::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.4;
-    background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.022) 48%,transparent 66%)}
-  .screen{padding:0 0 110px;display:none;position:relative;z-index:1}
-  .screen.active{display:block;animation:fadeIn 0.4s cubic-bezier(0.4,0,0.2,1)}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-  @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    background:
+      radial-gradient(120% 60% at 50% 0%,rgba(242,178,51,0.07),transparent 60%),
+      linear-gradient(180deg,rgba(9,8,7,0.40) 0%,rgba(9,8,7,0.62) 34%,rgba(8,7,6,0.86) 68%,rgba(7,6,5,0.95) 100%)}
+  #app{min-height:100vh;min-height:100dvh;position:relative;overflow-x:hidden;overflow-x:clip;overflow-y:visible;background:transparent}
+  /* Grano muy suave en una capa fija (nunca en algo que scrollea: repintaría en cada frame). */
+  #app::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.3;mix-blend-mode:overlay;
+    background-image:radial-gradient(rgba(255,255,255,0.05) 0.6px,transparent 0.6px);background-size:3px 3px}
+  .screen{padding:0 0 calc(116px + var(--safe-bottom));display:none;position:relative;z-index:1}
+  .screen.active{display:block;animation:screenIn var(--dur-base) var(--ease-out)}
+  @keyframes screenIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(92,214,141,0.45)}70%{box-shadow:0 0 0 7px rgba(92,214,141,0)}}
   @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+  @keyframes barIn{from{transform:translateY(105%)}to{transform:translateY(0)}}
 
   /* Landing */
-  .landing{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 30px;position:relative}
-  .landing-glow{position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(221,147,80,0.11),transparent 72%);top:50%;left:50%;transform:translate(-50%,-58%);filter:blur(70px);pointer-events:none}
-  .logo-container{position:relative;width:220px;height:220px;margin-bottom:18px;display:flex;align-items:center;justify-content:center;
-    opacity:0;animation:logoIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s forwards}
-  .logo-ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(221,147,80,0.35);animation:spin 24s linear infinite}
-  .logo-ring::before{content:'';position:absolute;inset:9px;border-radius:50%;border:1px solid rgba(221,147,80,0.18)}
-  .logo-ring::after{content:'';position:absolute;inset:18px;border-radius:50%;border:1px dashed rgba(221,147,80,0.12);animation:spin 32s linear infinite reverse}
-  .logo-flame{position:relative;z-index:2;width:92px;height:92px;filter:drop-shadow(0 0 22px rgba(221,147,80,0.4))}
-  .logo-img{display:none;position:relative;z-index:2;width:172px;height:172px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 6px 26px rgba(221,147,80,0.35))}
-  .greeting-script{font-family:var(--script);font-weight:700;font-size:40px;color:var(--accent-light);line-height:1;
-    text-shadow:0 2px 20px rgba(221,147,80,0.3),0 3px 14px rgba(0,0,0,0.6);opacity:0;animation:textIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.55s forwards}
-  .greeting-sub{font-family:var(--body);font-weight:400;font-size:13px;color:var(--text-secondary);margin-top:8px;letter-spacing:0.02em;text-shadow:0 2px 8px rgba(0,0,0,0.6);
-    opacity:0;animation:textIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.72s forwards}
+  .landing{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(40px + var(--safe-top)) 28px 40px;position:relative}
+  .landing-glow{position:absolute;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(242,178,51,0.16),transparent 70%);top:50%;left:50%;transform:translate(-50%,-62%);filter:blur(60px);pointer-events:none}
+  .logo-container{position:relative;width:200px;height:200px;margin-bottom:22px;display:flex;align-items:center;justify-content:center}
+  /* Bienvenida del QR de las mesas: el logo más grande (el del selector de retiro/envío queda igual). */
+  #screen-landing .logo-container{width:256px;height:256px;margin-bottom:26px}
+  #screen-landing .logo-img{width:240px;height:240px}
+  /* Halo tenue alrededor del logo: se prende cuando termina el trazado neón. */
+  .logo-ring{position:absolute;inset:-6px;border-radius:50%;
+    box-shadow:0 0 0 10px rgba(242,178,51,0.035),0 0 60px rgba(242,178,51,0.12);
+    opacity:0;animation:neonHalo 600ms ease-out 2s forwards}
+  /* ===== Entrada del logo: trazado completo en neón =====
+     Todos los contornos del logo (aros, llamas, bol, NANO, RESTO BAR, cuchillo, líneas y
+     barras, sacados de logo.png) se dibujan en dorado neón, del borde hacia adentro; al
+     terminar titilan como un cartel al prenderse, aparece el logo real debajo y el neón se
+     apaga. Se ve una sola vez por visita. Con "reducir movimiento" aparece el logo directo. */
+  .logo-trazo{position:absolute;top:50%;left:50%;width:188px;height:188px;transform:translate(-50%,-50%);z-index:3;pointer-events:none;overflow:visible;
+    filter:drop-shadow(0 0 2px #ffd27a) drop-shadow(0 0 7px rgba(242,178,51,0.75));
+    animation:neonEncendido 450ms linear 1.55s 1,neonApagar 500ms ease-out 2.05s forwards}
+  #screen-landing .logo-trazo{width:240px;height:240px}
+  #screen-selector .logo-trazo{width:160px;height:160px;--trazo:8}
+  .logo-trazo path{fill:none;stroke:#ffd27a;stroke-width:var(--trazo,6);stroke-linejoin:round;stroke-linecap:round;
+    stroke-dasharray:1;stroke-dashoffset:1;animation:neonTrazo 1s cubic-bezier(0.65,0,0.35,1) calc(0.1s + var(--i) * 18ms) forwards}
+  @keyframes neonTrazo{to{stroke-dashoffset:0}}
+  @keyframes neonEncendido{0%,100%{opacity:1}15%{opacity:0.35}30%{opacity:1}45%{opacity:0.55}60%{opacity:1}}
+  @keyframes neonApagar{to{opacity:0}}
+  @keyframes neonHalo{to{opacity:1}}
+  #screen-landing .logo-img,#screen-selector .logo-img{animation:logoNeon 600ms var(--ease-out) 1.75s backwards}
+  @keyframes logoNeon{from{opacity:0;transform:scale(0.97);filter:brightness(1.8) drop-shadow(0 10px 30px rgba(0,0,0,0.55))}}
+  .logo-flame{position:relative;z-index:2;width:92px;height:92px;filter:drop-shadow(0 0 22px rgba(242,178,51,0.4))}
+  .logo-img{display:none;position:relative;z-index:2;width:188px;height:188px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 10px 30px rgba(0,0,0,0.55))}
+  /* El saludo conserva la tipografía original (pedido del dueño): cursiva Dancing Script + Inter. */
+  .greeting-script{font-family:var(--script);font-weight:700;font-size:40px;color:#f0bc82;line-height:1;
+    text-shadow:0 2px 20px rgba(221,147,80,0.3),0 3px 14px rgba(0,0,0,0.6);opacity:0;animation:textIn 600ms var(--ease-out) 2s forwards}
+  .greeting-sub{font-family:'Inter',-apple-system,sans-serif;font-weight:400;font-size:13px;color:#9c9690;margin-top:8px;letter-spacing:0.02em;text-shadow:0 2px 8px rgba(0,0,0,0.6);
+    opacity:0;animation:textIn 600ms var(--ease-out) 2.08s forwards}
   .greeting-sub b{color:var(--text);font-weight:600}
-  .mesa-badge{margin-top:26px;background:var(--glass);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:16px 32px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:14px;box-shadow:var(--shadow-sm);
-    opacity:0;animation:textIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.88s forwards}
-  .mesa-badge-text{display:flex;flex-direction:column;align-items:flex-start;line-height:1}
-  .mesa-badge-text small{font-size:10.5px;letter-spacing:0.14em;color:var(--text-secondary);margin-bottom:2px}
-  .mesa-badge-text b{font-family:var(--display);font-size:30px;color:var(--accent-light);font-weight:700}
-  .mesa-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 10px var(--success);animation:pulse 2.2s ease infinite}
-  .cta-primary{margin-top:32px;background:linear-gradient(135deg,var(--accent-light),var(--accent),var(--ember));background-size:200% 200%;animation:shimmer 3s ease infinite,textIn 0.7s cubic-bezier(0.16,1,0.3,1) 1.04s forwards;color:#1a0f00;border:none;font-family:var(--display);font-weight:700;font-size:15px;padding:16px 38px;border-radius:var(--radius-xl);letter-spacing:0.01em;cursor:pointer;box-shadow:0 8px 32px rgba(221,147,80,0.32),0 0 50px rgba(221,147,80,0.08);transition:var(--transition);position:relative;overflow:hidden;opacity:0}
-  .cta-primary::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,0.2),transparent);transform:translateX(-100%);transition:0.6s}
-  .cta-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(221,147,80,0.42)}
-  .cta-primary:hover::before{transform:translateX(100%)}
-  .cta-primary:active{transform:translateY(0) scale(0.97)}
-  .landing-note{margin-top:18px;font-size:12px;color:var(--text-secondary);max-width:260px;line-height:1.6;text-shadow:0 2px 8px rgba(0,0,0,0.6);
-    opacity:0;animation:textIn 0.7s cubic-bezier(0.16,1,0.3,1) 1.2s forwards}
-  .error-title{font-family:var(--display);font-weight:700;font-size:22px;color:var(--text);text-shadow:0 2px 10px rgba(0,0,0,0.6)}
-  .field-label{font-family:var(--display);font-size:12px;font-weight:600;color:rgba(255,255,255,0.75);margin:0 18px 8px;text-transform:uppercase;letter-spacing:0.04em;text-shadow:0 1px 4px rgba(0,0,0,0.5)}
+  .mesa-badge{margin-top:28px;background:var(--glass);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);border:1px solid var(--glass-border);border-radius:var(--radius-pill);padding:10px 24px 10px 20px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:14px;box-shadow:var(--shadow-sm);
+    opacity:0;animation:textIn 600ms var(--ease-out) 2.15s forwards}
+  .mesa-badge-text{display:flex;align-items:baseline;gap:10px;line-height:1}
+  .mesa-badge-text small{font-size:12px;font-weight:600;letter-spacing:0.14em;color:var(--text-secondary)}
+  .mesa-badge-text b{font-family:var(--display);font-size:34px;color:var(--accent-light);font-weight:700;font-variant-numeric:tabular-nums}
+  /* El punto verde sí comunica un estado real (mesa conectada), por eso es el único que late. */
+  .mesa-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2.4s var(--ease-out) infinite}
+  .cta-primary{margin-top:30px;min-height:54px;background:linear-gradient(180deg,var(--accent-light) -40%,var(--accent) 60%,var(--accent-deep) 140%);color:var(--on-accent);border:none;font-family:var(--body);font-weight:700;font-size:16px;padding:0 34px;border-radius:var(--radius-pill);display:inline-flex;align-items:center;gap:10px;
+    box-shadow:0 10px 30px rgba(242,178,51,0.28),inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.12);
+    transition:transform var(--dur-press) var(--ease-out),box-shadow var(--dur-fast) ease;position:relative;overflow:hidden;
+    opacity:0;animation:textIn 600ms var(--ease-out) 2.22s forwards}
+  .cta-primary::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,0.35) 50%,transparent 70%);transform:translateX(-120%);pointer-events:none}
+  /* Un solo brillo al aparecer (invita a tocar) en vez del shimmer infinito de antes. */
+  .cta-primary::before{animation:sheen 900ms var(--ease-in-out) 2.9s 1 forwards}
+  @keyframes sheen{to{transform:translateX(120%)}}
+  .cta-primary:active{transform:scale(0.97)}
+  .landing-note{margin-top:18px;font-size:14px;color:var(--text-secondary);max-width:290px;line-height:1.55;text-shadow:0 2px 8px rgba(0,0,0,0.6);text-wrap:pretty;
+    opacity:0;animation:textIn 600ms var(--ease-out) 2.3s forwards}
+  .error-title{font-family:var(--display);font-weight:700;font-size:34px;line-height:1;text-transform:uppercase;letter-spacing:0.005em;color:var(--text);text-shadow:0 2px 10px rgba(0,0,0,0.6);text-wrap:balance}
+  .state-icon{width:64px;height:64px;margin-bottom:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent-soft);border:1px solid var(--accent-line);color:var(--accent-light);animation:logoIn 500ms var(--ease-out) both}
+  .state-icon svg{width:28px;height:28px}
+  .state-icon.warn{background:var(--danger-bg);border-color:var(--danger-line);color:var(--danger)}
+  .field-label{font-family:var(--body);font-size:13px;font-weight:600;color:var(--text-secondary);margin:0 18px 8px;letter-spacing:0.01em}
   .field-input{
-    display:block;width:calc(100% - 36px);margin:0 18px 10px;padding:13px 15px;border-radius:var(--radius-md);
-    background:rgba(20,15,12,0.5);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border:1px solid var(--glass-border);
-    color:var(--text);font-family:var(--body);font-size:13.5px;outline:none;transition:var(--transition);box-shadow:var(--shadow-sm);
+    display:block;width:calc(100% - 36px);margin:0 18px 10px;min-height:50px;padding:13px 16px;border-radius:var(--radius-md);
+    background:rgba(18,14,11,0.62);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);border:1px solid var(--glass-border);
+    /* 16px: por debajo de eso iOS hace zoom solo al tocar el campo. */
+    color:var(--text);font-family:var(--body);font-size:16px;outline:none;transition:border-color var(--dur-fast) ease,box-shadow var(--dur-fast) ease;box-shadow:var(--shadow-sm);
   }
-  .field-input:focus{border-color:rgba(221,147,80,0.5)}
-  .field-input::placeholder{color:rgba(255,255,255,0.5)}
+  .field-input:focus{border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft),var(--shadow-sm)}
+  .field-input::placeholder{color:rgba(246,241,232,0.55)}
   .codigo-input{width:calc(100% - 0px);max-width:220px;margin:0 auto}
   .pay-options{display:flex;gap:10px;margin:0 18px}
   .pay-opt{
-    flex:1;padding:12px;border-radius:var(--radius-md);background:rgba(20,15,12,0.5);border:1px solid var(--glass-border);
-    color:rgba(255,255,255,0.78);font-family:var(--body);font-size:12.5px;font-weight:500;cursor:pointer;transition:var(--transition);
+    flex:1;min-height:48px;padding:10px 12px;border-radius:var(--radius-pill);background:rgba(18,14,11,0.6);border:1px solid var(--glass-border);
+    color:var(--text-secondary);font-family:var(--body);font-size:14.5px;font-weight:600;transition:var(--transition);
   }
-  .pay-opt.active{border-color:var(--accent);color:var(--text);background:rgba(221,147,80,0.18)}
-  .cart-error{margin:14px 18px 0;padding:10px 14px;border-radius:var(--radius-md);background:rgba(220,70,60,0.12);border:1px solid rgba(220,70,60,0.3);color:#ff9b8f;font-size:12px}
+  .pay-opt:active{transform:scale(0.97)}
+  .pay-opt.active{border-color:var(--accent);color:var(--text);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent-line)}
+  .cart-error{margin:14px 18px 0;padding:12px 14px;border-radius:var(--radius-md);background:var(--danger-bg);border:1px solid var(--danger-line);color:var(--danger);font-size:14px;line-height:1.45;animation:slideUp var(--dur-fast) var(--ease-out)}
 
-  /* Alias de transferencia — bien llamativo, es lo primero que ve el cliente al elegir
+  /* Alias de transferencia: bien llamativo, es lo primero que ve el cliente al elegir
      "Transferencia", antes de pedirle el comprobante. */
   .alias-box{
-    margin:0 18px 14px;padding:14px 16px;border-radius:var(--radius-lg);
-    background:linear-gradient(135deg,rgba(221,147,80,0.20),rgba(185,106,66,0.10));
-    border:1.5px solid rgba(221,147,80,0.5);box-shadow:var(--shadow-sm);
+    margin:0 18px 14px;padding:16px;border-radius:var(--radius-lg);
+    background:linear-gradient(145deg,rgba(242,178,51,0.18),rgba(217,134,28,0.06));
+    border:1px solid var(--accent-line);box-shadow:var(--shadow-sm);animation:slideUp var(--dur-base) var(--ease-out);
   }
-  .alias-label{font-size:10.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px}
+  .alias-label{font-size:12.5px;font-weight:600;color:var(--text-secondary);margin-bottom:6px}
   .alias-value{display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .alias-value span{font-family:var(--display);font-size:19px;font-weight:800;color:var(--accent-light);letter-spacing:-0.01em;word-break:break-all}
+  .alias-value span{font-family:var(--display);font-size:26px;font-weight:700;color:var(--accent-light);letter-spacing:0.01em;word-break:break-all;line-height:1.05}
   .alias-copy-btn{
-    background:rgba(255,255,255,0.12);border:1px solid var(--glass-border);color:var(--text);
-    padding:7px 13px;border-radius:var(--radius-sm);font-size:11.5px;font-weight:600;cursor:pointer;
+    background:rgba(255,246,230,0.12);border:1px solid var(--glass-border);color:var(--text);
+    min-height:40px;padding:0 16px;border-radius:var(--radius-pill);font-size:13.5px;font-weight:600;
     transition:var(--transition);flex-shrink:0;
   }
-  .alias-copy-btn:hover{background:var(--surface-hover)}
-  .alias-copy-btn.copied{background:var(--success);color:#08210f;border-color:var(--success)}
-  .alias-titular{font-size:11.5px;color:var(--text-secondary);margin-top:4px}
+  .alias-copy-btn:active{transform:scale(0.96)}
+  .alias-copy-btn.copied{background:var(--success);color:#062312;border-color:var(--success)}
+  .alias-titular{font-size:13px;color:var(--text-secondary);margin-top:6px}
 
   /* ===== Código de verificación: 4 casilleros que se abren en abanico al completarse y
      se juntan en uno solo para el "sello" de verificando/confirmado. ===== */
-  .otp-wrap{position:relative;margin-top:26px;height:64px;display:flex;align-items:center;justify-content:center}
+  .otp-wrap{position:relative;margin-top:28px;height:68px;display:flex;align-items:center;justify-content:center}
   .otp-slots{display:flex;gap:14px}
   .otp-slot{
-    width:56px;height:64px;border-radius:var(--radius-md);text-align:center;font-family:var(--display);font-size:24px;font-weight:700;
-    background:rgba(20,15,12,0.5);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);
+    width:56px;height:66px;border-radius:var(--radius-md);text-align:center;font-family:var(--display);font-size:30px;font-weight:700;
+    background:rgba(18,14,11,0.62);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);
     border:1px solid var(--glass-border);color:var(--text);outline:none;box-shadow:var(--shadow-sm);
-    transform-origin:50% 320%;transition:border-color 0.2s,box-shadow 0.2s;caret-color:var(--accent);
+    transform-origin:50% 320%;transition:border-color var(--dur-fast),box-shadow var(--dur-fast);caret-color:var(--accent);
   }
-  .otp-slot:focus{border-color:rgba(221,147,80,0.55);box-shadow:0 0 0 3px rgba(221,147,80,0.12),var(--shadow-sm)}
-  .otp-slot.filled{border-color:rgba(221,147,80,0.4)}
+  .otp-slot:focus{border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft),var(--shadow-sm)}
+  .otp-slot.filled{border-color:var(--accent-line)}
   .otp-slots.shake .otp-slot{
-    border-color:rgba(220,70,60,0.6);animation:otpShake 0.42s cubic-bezier(0.4,0,0.2,1);
+    border-color:var(--danger-line);animation:otpShake 0.42s var(--ease-out);
   }
   @keyframes otpShake{
     0%,100%{transform:translateX(0)}
@@ -131,254 +192,330 @@
   }
   /* El "sello": un solo casillero que reemplaza a los 4 mientras se verifica el código. */
   .otp-seal{
-    position:absolute;inset:0;margin:auto;width:64px;height:64px;border-radius:var(--radius-md);
+    position:absolute;inset:0;margin:auto;width:66px;height:66px;border-radius:var(--radius-md);
     display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;
-    background:rgba(20,15,12,0.5);border:1px solid rgba(221,147,80,0.5);color:var(--accent-light);
-    box-shadow:0 0 0 0 rgba(221,147,80,0.35);transition:opacity 0.25s,border-color 0.3s,color 0.3s;
+    background:rgba(18,14,11,0.62);border:1px solid var(--accent-line);color:var(--accent-light);
+    box-shadow:0 0 0 0 rgba(242,178,51,0.35);transition:opacity var(--dur-fast),border-color 0.3s,color 0.3s;
   }
-  .otp-seal svg{width:26px;height:26px;stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset 0.35s ease 0.05s}
+  .otp-seal svg{width:28px;height:28px;stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset 0.35s var(--ease-out) 0.05s}
   .otp-seal.show{opacity:1;animation:otpPulse 1.1s ease-in-out infinite}
-  .otp-seal.ok{border-color:var(--success);color:var(--success);animation:none;box-shadow:0 0 24px rgba(74,222,128,0.35)}
+  .otp-seal.ok{border-color:var(--success);color:var(--success);animation:none;box-shadow:0 0 24px rgba(92,214,141,0.3)}
   .otp-seal.ok svg{stroke-dashoffset:0}
   @keyframes otpPulse{
-    0%,100%{box-shadow:0 0 0 0 rgba(221,147,80,0.35)}
-    50%{box-shadow:0 0 0 10px rgba(221,147,80,0)}
+    0%,100%{box-shadow:0 0 0 0 rgba(242,178,51,0.35)}
+    50%{box-shadow:0 0 0 10px rgba(242,178,51,0)}
   }
-  .selector-options{display:flex;flex-direction:column;gap:12px;width:100%;margin-top:30px}
+  .selector-options{display:flex;flex-direction:column;gap:12px;width:100%;margin-top:28px}
   .selector-opt{
-    display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:var(--radius-lg);
-    background:var(--glass);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);
-    border:1px solid var(--glass-border);cursor:pointer;text-align:left;transition:var(--transition);box-shadow:var(--shadow-sm);
-    opacity:0;animation:textIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.95s forwards;
+    display:flex;align-items:center;gap:16px;min-height:76px;padding:14px 18px;border-radius:var(--radius-lg);
+    background:var(--glass);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);
+    border:1px solid var(--glass-border);text-align:left;transition:var(--transition);box-shadow:var(--shadow-sm);
+    opacity:0;animation:textIn 600ms var(--ease-out) 2.2s forwards;
   }
-  .selector-opt:nth-child(2){animation-delay:1.08s}
-  .selector-opt:active{transform:scale(0.97);border-color:rgba(221,147,80,0.4)}
-  .selector-opt:disabled{opacity:0.45!important;cursor:not-allowed;filter:grayscale(0.3)}
+  .selector-opt:nth-child(2){animation-delay:2.26s}
+  .selector-opt:active{transform:scale(0.98);border-color:var(--accent-line)}
+  .selector-opt:disabled{opacity:0.45!important;cursor:not-allowed;filter:grayscale(0.4)}
   .selector-opt:disabled:active{transform:none}
-  .selector-opt-icon{font-size:26px;flex-shrink:0}
-  .selector-opt-text{display:flex;flex-direction:column;gap:2px}
-  .selector-opt-text b{font-family:var(--display);font-size:14.5px;color:var(--text);font-weight:600}
-  .selector-opt-text small{font-size:11.5px;color:var(--text-secondary)}
-  @keyframes logoIn{from{opacity:0;transform:scale(0.75)}to{opacity:1;transform:scale(1)}}
-  @keyframes textIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-  .screen-exit{animation:screenOut 0.22s cubic-bezier(0.4,0,0.2,1) forwards}
-  @keyframes screenOut{from{opacity:1;transform:scale(1) translateY(0)}to{opacity:0;transform:scale(0.96) translateY(-8px)}}
+  .selector-opt-icon{width:46px;height:46px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--accent-soft);border:1px solid var(--accent-line);color:var(--accent-light)}
+  .selector-opt-icon svg{width:22px;height:22px}
+  .selector-opt-text{display:flex;flex-direction:column;gap:2px;flex:1}
+  .selector-opt-text b{font-family:var(--display);font-size:22px;line-height:1.05;color:var(--text);font-weight:700;text-transform:uppercase;letter-spacing:0.01em}
+  .selector-opt-text small{font-size:14px;color:var(--text-secondary)}
+  .selector-opt-chevron{width:18px;height:18px;color:var(--text-muted);flex-shrink:0}
+  @keyframes logoIn{from{opacity:0;transform:scale(0.92);filter:blur(6px)}to{opacity:1;transform:scale(1);filter:blur(0)}}
+  @keyframes textIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  /* Salida más corta que la entrada: el sistema responde rápido, lo nuevo se toma su tiempo. */
+  .screen-exit{animation:screenOut 160ms var(--ease-out) forwards}
+  @keyframes screenOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(0.985)}}
 
 
   /* Top bar */
-  .topbar{position:sticky;top:0;z-index:20;background:rgba(20,14,11,0.42);backdrop-filter:blur(22px) saturate(170%);-webkit-backdrop-filter:blur(22px) saturate(170%);border-bottom:1px solid var(--glass-border);padding:12px 18px;display:flex;align-items:center;gap:12px;box-shadow:inset 0 -1px 0 rgba(255,255,255,0.05)}
-  /* En la pantalla de menú, la topbar pinta la misma foto de la categoría activa (la
-     manda setStaticCat/goToCat por JS) para que no se note como una franja de otro color
-     pegada arriba del degradado de la categoría — mismo tinte oscuro de siempre, solo que
-     ahora con la foto detrás en vez de un fondo liso genérico. */
-  /* Sin borde propio: así no queda una raya entre la topbar y el degradado de la categoría
-     de abajo — son la misma foto (ver .cat-backdrop más abajo, que ahora arranca desde el
-     borde de arriba de la pantalla) y el propio backdrop-filter:blur de la topbar la
-     desenfoca en vivo, sin necesidad de pintarla dos veces. */
-  #catTopbar{border-bottom:none}
-  .topbar-back{width:36px;height:36px;border-radius:50%;background:rgba(20,16,13,0.55);backdrop-filter:blur(12px) saturate(160%);-webkit-backdrop-filter:blur(12px) saturate(160%);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.92);transition:var(--transition);flex-shrink:0;box-shadow:var(--shadow-sm);filter:drop-shadow(0 1px 3px rgba(0,0,0,0.5))}
-  .topbar-back:hover{background:var(--surface-hover);color:var(--text)}
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(16,13,10,0.55);backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);border-bottom:1px solid var(--glass-border);padding:calc(10px + var(--safe-top)) 16px 10px;display:flex;align-items:center;gap:12px}
+  /* Transparente: su tinte y blur propios dejaban una franja de otro color sobre la foto de
+     la categoría. Los botones ya tienen su propio fondo de vidrio, así que se siguen leyendo. */
+  #catTopbar{border-bottom:none;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;pointer-events:none}
+  #catTopbar > *{pointer-events:auto}
+  .topbar-back,.cart-btn{width:44px;height:44px;border-radius:50%;background:rgba(16,13,10,0.6);backdrop-filter:blur(12px) saturate(150%);-webkit-backdrop-filter:blur(12px) saturate(150%);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;color:var(--text);transition:var(--transition);flex-shrink:0;box-shadow:var(--shadow-sm);position:relative}
+  .topbar-back:active,.cart-btn:active{transform:scale(0.94)}
   .topbar-spacer{flex:1}
-  .cart-btn{position:relative;width:40px;height:40px;border-radius:50%;background:rgba(20,16,13,0.55);backdrop-filter:blur(12px) saturate(160%);-webkit-backdrop-filter:blur(12px) saturate(160%);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.92);transition:var(--transition);flex-shrink:0;box-shadow:var(--shadow-sm);filter:drop-shadow(0 1px 3px rgba(0,0,0,0.5))}
-  .cart-btn:hover{background:var(--surface-hover);color:var(--text)}
-  .cart-btn svg{width:18px;height:18px}
-  .cart-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:50%;background:var(--accent);color:#1a0f00;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+  .cart-btn svg{width:19px;height:19px}
+  .cart-badge{position:absolute;top:-3px;right:-3px;min-width:20px;height:20px;border-radius:var(--radius-pill);background:var(--accent);color:var(--on-accent);font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--bg)}
+  .cart-badge.bump{animation:pop 320ms var(--ease-out)}
 
-  /* ===== Categoría a pantalla completa: plato + transición diagonal + sheet de productos =====
+  /* ===== Categoría a pantalla completa: plato + transición diagonal + lista de productos =====
      Adaptado de una referencia que pasó el dueño (un solo plato grande por categoría, se
      desliza en diagonal al cambiar, con miniaturas "espía" de la categoría anterior/siguiente
-     a los costados, y un botón que abre una bandeja inferior con la lista de productos). */
+     a los costados). */
   #menuContent{position:relative}
-  /* Arranca desde el borde de arriba de la pantalla (detrás de la topbar, que va sticky
-     encima) — así la topbar y la franja de la categoría son la MISMA foto, sin costura:
-     la topbar no pinta nada propio, solo desenfoca en vivo lo que tiene detrás con su
-     backdrop-filter de siempre. */
+  /* Arranca desde el borde de arriba de la pantalla (detrás de la topbar, que va sticky encima). */
   .cat-backdrop{
-    position:absolute;inset:0 -10% auto -10%;height:44vh;z-index:0;
+    position:absolute;inset:0 -10% auto -10%;height:48vh;z-index:0;
     background-size:cover;background-position:center;filter:blur(38px) saturate(130%) brightness(0.5);
     transform:scale(1.15);opacity:1;transition:opacity 0.5s ease;
   }
   .cat-backdrop::after{
     content:'';position:absolute;inset:0;
-    background:linear-gradient(180deg,rgba(10,11,13,0.08) 0%,var(--bg) 94%);
+    background:linear-gradient(180deg,rgba(13,12,11,0.05) 0%,var(--bg) 94%);
   }
-  .cat-index{position:relative;z-index:2;text-align:center;padding-top:10px;font-size:12px;letter-spacing:0.06em;color:var(--text);opacity:0.85;text-shadow:0 2px 8px rgba(0,0,0,0.55)}
+  /* Sube por debajo de la barra de arriba (que es transparente): el plato del frente queda
+     entre el botón de volver y el del carrito, sin dejar un hueco vacío encima. */
+  .cat-plate-zone{position:relative;z-index:2;height:calc(var(--d) + 44px);margin-top:-46px;touch-action:pan-y;--d:min(68vw,280px)}
+  /* Rueda: los platos giran sobre un arco */
+  .cat-wheel{position:absolute;inset:0;overflow:hidden;touch-action:pan-y;cursor:grab;-webkit-user-select:none;user-select:none}
+  .cat-wheel.arrastrando{cursor:grabbing}
+  .cat-wheel-arc{position:absolute;left:50%;border-radius:50%;border:1px dashed rgba(242,178,51,0.28);pointer-events:none}
+  .cat-wheel-mark{position:absolute;left:50%;top:0;width:0;height:0;margin-left:-7px;border-left:7px solid transparent;border-right:7px solid transparent;border-top:9px solid var(--accent);filter:drop-shadow(0 2px 6px rgba(242,178,51,0.5));z-index:200}
+  .cat-wheel-item{position:absolute;left:50%;top:12px;width:var(--d);height:var(--d);margin-left:calc(var(--d) / -2);border-radius:50%;padding:0;
+    background-size:cover;background-position:center;border:3px solid rgba(255,238,210,0.2);box-shadow:0 18px 44px rgba(0,0,0,0.55);will-change:transform,opacity}
+  .cat-wheel-item:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
-  /* Más chico y más arriba que antes: la lista de productos ahora va siempre visible
-     debajo (no hace falta tocar "Ver productos"), así que el plato le deja lugar. */
-  .cat-plate-zone{position:relative;z-index:2;height:23vh;margin-top:2vh;touch-action:pan-y}
-  .cat-plate{
-    position:absolute;top:50%;left:50%;width:46vw;max-width:190px;height:46vw;max-height:190px;
-    border-radius:50%;background-size:cover;background-position:center;
-    border:3px solid var(--glass-border-hover);box-shadow:var(--shadow-md);
-    transition:transform 0.55s cubic-bezier(0.22,1,0.36,1),opacity 0.55s ease,filter 0.55s ease;
-    cursor:grab;z-index:2;
-  }
-  /* Centrado con translate(-50%,-50%) en vez de margin fijo: un margin en px asume que el
-     plato mide siempre un ancho fijo, pero su ancho real es min(46vw,190px) — en pantallas
-     donde 46vw da menos de 190px quedaba corrido del centro. La diagonal se suma con calc(). */
-  .cat-plate.enter-from-br{transform:translate(calc(-50% + 46%),calc(-50% + 34%)) scale(0.55);opacity:0;filter:blur(10px);z-index:1}
-  .cat-plate.exit-to-tl{transform:translate(calc(-50% - 46%),calc(-50% - 34%)) scale(0.55);opacity:0;filter:blur(10px)}
-  .cat-plate.enter-from-bl{transform:translate(calc(-50% - 46%),calc(-50% + 34%)) scale(0.55);opacity:0;filter:blur(10px);z-index:1}
-  .cat-plate.exit-to-tr{transform:translate(calc(-50% + 46%),calc(-50% - 34%)) scale(0.55);opacity:0;filter:blur(10px)}
-  .cat-plate.center{transform:translate(-50%,-50%) scale(1);opacity:1;filter:blur(0)}
+  .cat-name-block{position:relative;z-index:2;text-align:center;margin-top:4px;padding:0 24px;transition:transform var(--dur-base) var(--ease-out),opacity var(--dur-fast) ease}
+  .cat-name-block h1{font-family:var(--display);font-size:40px;line-height:0.95;font-weight:700;text-transform:uppercase;letter-spacing:0.005em;text-wrap:balance;text-shadow:0 4px 24px rgba(0,0,0,0.5)}
+  .cat-swipe-hint{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font-size:13px;color:var(--text-secondary);text-shadow:0 1px 6px rgba(0,0,0,0.4)}
+  .cat-dots{display:flex;gap:5px;justify-content:center;margin-top:12px;position:relative;z-index:2}
+  .cat-dots i{width:6px;height:6px;border-radius:var(--radius-pill);background:rgba(255,238,210,0.22);transition:width var(--dur-base) var(--ease-out),background-color var(--dur-fast) ease}
+  .cat-dots i.on{width:18px;background:var(--accent)}
 
-  .cat-peek{
-    position:absolute;top:50%;z-index:3;width:48px;height:48px;margin-top:-24px;border-radius:50%;overflow:hidden;
-    border:2px solid var(--glass-border);opacity:0.5;filter:blur(1px) brightness(0.75);cursor:pointer;
-    transition:opacity 0.25s,filter 0.25s,transform 0.25s;
-  }
-  .cat-peek img{width:100%;height:100%;object-fit:cover;display:block}
-  .cat-peek:hover,.cat-peek:active{opacity:0.85;filter:blur(0) brightness(0.95)}
-  .cat-peek.prev{left:10px;transform:scale(0.9)}
-  .cat-peek.next{right:10px;transform:scale(0.9)}
-
-  .cat-name-block{position:relative;z-index:2;text-align:center;margin-top:14px;transition:transform 0.4s ease,opacity 0.4s ease}
-  .cat-name-block h1{font-family:var(--display);font-size:22px;font-weight:700}
-  .cat-swipe-hint{position:relative;z-index:2;text-align:center;margin-top:8px;font-size:11.5px;color:var(--text-secondary);text-shadow:0 1px 6px rgba(0,0,0,0.4)}
-
-  /* Product List - TEXT ONLY */
+  /* Lista de productos */
   .products-header{display:flex;align-items:center;justify-content:space-between;padding:0 18px 12px}
-  .products-header h3{font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:-0.01em}
-  .products-header .count{font-size:12px;color:var(--text-muted);font-weight:500}
-  .section-divider{position:relative;z-index:2;height:1px;background:linear-gradient(90deg,transparent,var(--glass-border),transparent);margin:6px 18px 14px}
-  .products-list{position:relative;z-index:2;padding:0 18px;display:flex;flex-direction:column;gap:10px}
+  .products-header h3{font-family:var(--display);font-weight:700;font-size:22px;text-transform:uppercase}
+  .products-header .count{font-size:13px;color:var(--text-muted);font-weight:500}
+  .section-divider{position:relative;z-index:2;height:1px;background:linear-gradient(90deg,transparent,var(--glass-border),transparent);margin:16px 18px 14px}
+  .products-list{position:relative;z-index:2;padding:0 14px;display:flex;flex-direction:column;gap:10px}
+  /* El detalle se anima por JS ("mazo", ver cambiarDetalle): la cascada CSS se apaga para que no se pisen. */
+  .products-list.anim-js .product-card,.products-list.anim-js .half-card{animation:none}
 
   .product-card{
     border-radius:var(--radius-lg);position:relative;
-    background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);
-    transition:var(--transition);padding:14px 16px;box-shadow:var(--shadow-sm);
-    animation:slideUp 0.35s ease backwards;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+    background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
+    transition:border-color var(--dur-fast) ease,box-shadow var(--dur-fast) ease;padding:16px;box-shadow:var(--shadow-sm);
+    /* Cascada corta (40ms entre tarjetas, tope en la 8va) al cambiar de categoría. */
+    animation:slideUp 360ms var(--ease-out) backwards;animation-delay:calc(min(var(--i,0),8) * 40ms);
+    display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
   }
-  .product-card:nth-child(1){animation-delay:0.04s}
-  .product-card:nth-child(2){animation-delay:0.08s}
-  .product-card:nth-child(3){animation-delay:0.12s}
-  .product-card:hover{border-color:var(--glass-border-hover);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+  /* Producto agregado al pedido: la tarjeta entera se tiñe de dorado y el nombre pasa a dorado. */
+  .product-card{transition:border-color var(--dur-fast) ease,box-shadow var(--dur-base) ease,background-color var(--dur-base) ease}
+  .product-info strong{transition:color var(--dur-fast) ease}
+  .product-card.in-cart{background:linear-gradient(135deg,rgba(242,178,51,0.22),rgba(242,178,51,0.06)),var(--glass);border:1.5px solid var(--accent);box-shadow:0 8px 26px rgba(242,178,51,0.14)}
+  .product-card.in-cart strong{color:var(--accent-light)}
   .product-info{flex:1;min-width:0}
-  .product-info strong{display:block;font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:3px}
-  .product-info .desc{font-size:12px;color:var(--text-secondary);line-height:1.45;margin-bottom:8px}
-  .product-info .price{font-family:var(--display);font-weight:700;font-size:17px;color:var(--accent-light)}
+  .product-info strong{display:block;font-family:var(--body);font-size:16.5px;font-weight:700;line-height:1.25;margin-bottom:4px;text-wrap:pretty}
+  .product-info .desc{font-size:14px;color:var(--text-secondary);line-height:1.45;margin-bottom:10px;text-wrap:pretty}
+  .product-info .desc:empty{display:none}
+  .product-info .price{font-family:var(--display);font-weight:700;font-size:24px;line-height:1;color:var(--accent-light);font-variant-numeric:tabular-nums;letter-spacing:0.01em}
   .product-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;padding-top:2px}
 
+  /* Foto del plato: no se muestra en la tarjeta, solo un link "Ver foto" que la abre encima de
+     la carta con fondo esmerilado. Así no se descarga ninguna imagen hasta que el cliente la pide. */
+  .media-links{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+  .foto-overlay{
+    position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:24px 20px;
+    padding-top:calc(24px + var(--safe-top));padding-bottom:calc(24px + var(--safe-bottom));
+    background:rgba(8,6,5,0.86);
+  }
+  /* El desenfoque es caro en celulares gama baja: blur chico y fondo ya oscuro, así si el
+     navegador no lo soporta (o lo hace lento) se ve igual de bien sin él. */
+  @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .foto-overlay{background:rgba(8,6,5,0.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  }
+  .foto-overlay.show{display:flex}
+  /* Las fotos son verticales 3:4: el ancho se limita también por el alto de pantalla, así
+     en celulares chicos la foto entera entra sin scrollear. */
+  .foto-box{width:100%;max-width:min(380px, calc((100vh - 150px) * 0.75));max-width:min(380px, calc((100dvh - 150px) * 0.75));position:relative;will-change:transform}
+  .foto-frame{position:relative;width:100%;aspect-ratio:3/4;border-radius:var(--radius-lg);overflow:hidden;background:rgba(255,255,255,0.04);box-shadow:var(--shadow-md)}
+  .foto-frame .spinner{position:absolute;top:50%;left:50%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;border:2.5px solid var(--glass-border);border-top-color:var(--accent);animation:spin 0.7s linear infinite}
+  #fotoGrande{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.03);transition:opacity var(--dur-base) ease,transform 600ms var(--ease-out)}
+  #fotoGrande.cargada{opacity:1;transform:none}
+  .foto-hint{margin-top:12px;text-align:center;font-size:13px;color:var(--text-secondary)}
+
   .btn-add-sm{
-    width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;
-    background:linear-gradient(135deg,var(--accent-light),var(--accent));color:#1a0f00;font-size:18px;font-weight:700;
-    display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(221,147,80,0.3);transition:var(--transition);
+    width:44px;height:44px;border-radius:50%;border:none;
+    background:linear-gradient(180deg,var(--accent-light) -30%,var(--accent) 70%);color:var(--on-accent);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(242,178,51,0.26),inset 0 1px 0 rgba(255,255,255,0.4);
+    transition:transform var(--dur-press) var(--ease-out),box-shadow var(--dur-fast) ease;
   }
-  .btn-add-sm:hover{transform:scale(1.1);box-shadow:0 5px 18px rgba(221,147,80,0.45)}
-  .btn-add-sm:active{transform:scale(0.92)}
+  .btn-add-sm svg{width:20px;height:20px}
+  .btn-add-sm:active{transform:scale(0.9)}
   .stepper-sm{
-    display:flex;align-items:center;gap:4px;background:var(--bg-elevated);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:4px;
+    display:flex;align-items:center;gap:2px;background:var(--glass-strong);border:1px solid var(--accent-line);border-radius:var(--radius-pill);padding:3px;
+    animation:stepperIn var(--dur-fast) var(--ease-out);
   }
+  @keyframes stepperIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
   .stepper-sm button{
-    width:26px;height:26px;border-radius:50%;border:none;cursor:pointer;background:var(--surface);color:var(--text);font-size:12px;font-weight:600;
-    display:flex;align-items:center;justify-content:center;transition:var(--transition);
+    width:38px;height:38px;border-radius:50%;border:none;background:transparent;color:var(--text);font-size:18px;font-weight:600;line-height:1;
+    display:flex;align-items:center;justify-content:center;transition:transform var(--dur-press) var(--ease-out),background-color var(--dur-fast) ease;
   }
-  .stepper-sm button:hover{background:var(--surface-hover)}
-  .stepper-sm button:active{transform:scale(0.9)}
-  .stepper-sm .qty{font-family:var(--display);font-weight:700;font-size:12.5px;min-width:18px;text-align:center}
+  .stepper-sm button:active{transform:scale(0.88);background:var(--surface-hover)}
+  .stepper-sm .qty{font-family:var(--display);font-weight:700;font-size:20px;min-width:20px;text-align:center;font-variant-numeric:tabular-nums}
 
-  .note-link-sm{background:none;border:none;color:var(--text);font-size:11px;text-decoration:underline;cursor:pointer;display:inline-flex;align-items:center;gap:3px;transition:color 0.2s;margin-top:4px}
-  .note-link-sm:hover{color:var(--accent)}
-  .note-chip-sm{display:inline-flex;align-items:center;gap:3px;margin-top:4px;font-size:10px;color:var(--accent-light);background:rgba(221,147,80,0.1);border:1px solid rgba(221,147,80,0.22);padding:2px 7px;border-radius:var(--radius-sm)}
-  .note-input-sm{width:100%;margin-top:4px;background:rgba(0,0,0,0.3);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:7px 10px;color:var(--text);font-size:11.5px;font-family:var(--body);outline:none}
+  .note-link-sm{background:none;border:none;color:var(--text-secondary);font-size:13.5px;font-weight:500;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,238,210,0.3);display:inline-flex;align-items:center;gap:4px;transition:color var(--dur-fast) ease;margin-top:8px;min-height:32px}
+  .note-link-sm:active{color:var(--accent-light)}
+  .note-chip-sm{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:13px;color:var(--accent-light);background:var(--accent-soft);border:1px solid var(--accent-line);padding:4px 10px;border-radius:var(--radius-pill)}
+  .note-chip-sm svg,.note-ic{width:13px;height:13px;flex-shrink:0;vertical-align:-2px}
+  .note-input-sm{display:block;width:100%;margin-top:8px;min-height:44px;background:rgba(0,0,0,0.35);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);font-size:16px;font-family:var(--body);outline:none;transition:border-color var(--dur-fast) ease}
   .note-input-sm:focus{border-color:var(--accent)}
+  select.note-input-sm{appearance:none;-webkit-appearance:none;padding-right:34px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23b8b0a4' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;background-color:rgba(0,0,0,0.35)}
 
-  .menu-status{display:flex;flex-direction:column;align-items:center;text-align:center;padding:70px 30px;gap:14px}
-  .menu-status .spinner{width:30px;height:30px;border-radius:50%;border:2.5px solid var(--glass-border);border-top-color:var(--accent);animation:spin 0.8s linear infinite}
-  .menu-status p{font-size:13px;color:var(--text-secondary);max-width:260px;line-height:1.5}
-  .menu-status .retry-btn{margin-top:4px;background:var(--surface);border:1px solid var(--glass-border);color:var(--text);padding:9px 18px;border-radius:var(--radius-md);font-size:12.5px;font-family:var(--body);cursor:pointer}
+  .menu-status{display:flex;flex-direction:column;align-items:center;text-align:center;padding:calc(90px + var(--safe-top)) 30px 70px;gap:16px}
+  .menu-status .spinner{width:30px;height:30px;border-radius:50%;border:2.5px solid var(--glass-border);border-top-color:var(--accent);animation:spin 0.7s linear infinite}
+  .menu-status p{font-size:15px;color:var(--text-secondary);max-width:270px;line-height:1.5}
+  .menu-status .retry-btn{margin-top:4px;background:var(--surface);border:1px solid var(--glass-border);color:var(--text);min-height:46px;padding:0 22px;border-radius:var(--radius-pill);font-size:14.5px;font-weight:600;font-family:var(--body);transition:var(--transition)}
+  .menu-status .retry-btn:active{transform:scale(0.97)}
+  /* Esqueleto de carga con la misma forma que la carta real: el plato redondo y 3 tarjetas. */
+  .skeleton{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;padding:0 14px}
+  .skeleton .sk{background:linear-gradient(100deg,rgba(255,238,210,0.05) 30%,rgba(255,238,210,0.11) 50%,rgba(255,238,210,0.05) 70%);background-size:300% 100%;animation:skShine 1.3s linear infinite}
+  .skeleton .sk-plate{width:200px;height:200px;border-radius:50%}
+  .skeleton .sk-title{width:160px;height:30px;border-radius:8px;margin-bottom:12px}
+  .skeleton .sk-card{width:100%;height:96px;border-radius:var(--radius-lg)}
+  @keyframes skShine{from{background-position:100% 0}to{background-position:0 0}}
 
   .video-link{
-    display:inline-flex;align-items:center;gap:5px;margin:4px 0 2px;padding:5px 11px;
-    background:rgba(221,147,80,0.12);border:1px solid rgba(221,147,80,0.3);border-radius:var(--radius-sm);
-    color:var(--accent-light);font-size:11px;font-weight:600;font-family:var(--body);cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 13px;
+    background:rgba(255,246,230,0.07);border:1px solid var(--glass-border);border-radius:var(--radius-pill);
+    color:var(--text);font-size:13px;font-weight:600;font-family:var(--body);transition:var(--transition);
   }
-  .video-link:hover{background:rgba(221,147,80,0.2)}
+  .video-link svg{width:15px;height:15px;color:var(--accent-light)}
+  .video-link:active{transform:scale(0.96);background:var(--accent-soft)}
   .video-overlay{
-    position:fixed;inset:0;z-index:100;background:rgba(5,4,4,0.92);backdrop-filter:blur(6px);
+    position:fixed;inset:0;z-index:100;background:rgba(5,4,4,0.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
     display:none;align-items:center;justify-content:center;padding:24px;
   }
-  .video-overlay.show{display:flex}
+  .video-overlay.show{display:flex;animation:fadeIn var(--dur-base) var(--ease-out)}
   .video-box{width:100%;max-width:400px}
-  .video-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;color:var(--text);font-family:var(--display);font-weight:600;font-size:14px}
-  .video-close{background:var(--surface);border:1px solid var(--glass-border);color:var(--text);width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer}
-  #videoPlayer{width:100%;border-radius:var(--radius-md);display:block;background:#000;box-shadow:var(--shadow-md)}
+  .video-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;color:var(--text);font-family:var(--display);font-weight:700;font-size:22px;text-transform:uppercase;line-height:1.05}
+  .video-close{background:rgba(255,246,230,0.1);border:1px solid var(--glass-border);color:var(--text);width:44px;height:44px;border-radius:50%;font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+  .video-close:active{transform:scale(0.92)}
+  #videoPlayer{width:100%;border-radius:var(--radius-lg);display:block;background:#000;box-shadow:var(--shadow-md)}
 
-  /* Bottom Bar */
+  /* Barra inferior: hoja flotante, sube con la curva de iOS la primera vez que aparece. */
   .bottombar{
-    position:fixed;left:0;right:0;bottom:0;max-width:430px;margin:0 auto;
-    background:rgba(20,14,11,0.48);backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%);
-    border-top:1px solid var(--glass-border);padding:12px 18px;
-    display:flex;align-items:center;justify-content:space-between;z-index:50;
-    box-shadow:0 -8px 32px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.05);
+    position:fixed;left:10px;right:10px;bottom:calc(10px + var(--safe-bottom));max-width:420px;margin:0 auto;
+    background:rgba(20,16,12,0.72);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);
+    border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:10px 10px 10px 20px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:50;
+    box-shadow:0 18px 50px rgba(0,0,0,0.55),inset 0 1px 0 var(--glass-sheen);
   }
-  .bottombar .total{font-size:11.5px;color:var(--text-secondary)}
-  .bottombar .total b{font-family:var(--display);font-size:18px;color:var(--text);display:block;letter-spacing:-0.02em}
+  .bottombar.enter{animation:barIn 420ms var(--ease-drawer)}
+  .bottombar .total{font-size:13px;color:var(--text-secondary);line-height:1.2}
+  .bottombar .total b{font-family:var(--display);font-size:26px;font-weight:700;color:var(--text);display:block;letter-spacing:0.01em;font-variant-numeric:tabular-nums}
   .cta{
-    background:linear-gradient(135deg,var(--accent-light),var(--accent));color:#1a0f00;border:none;
-    padding:12px 22px;border-radius:var(--radius-md);font-family:var(--display);font-size:13.5px;font-weight:700;cursor:pointer;
-    box-shadow:0 4px 18px rgba(221,147,80,0.32);transition:var(--transition);position:relative;overflow:hidden;
+    background:linear-gradient(180deg,var(--accent-light) -40%,var(--accent) 60%,var(--accent-deep) 150%);color:var(--on-accent);border:none;
+    min-height:52px;padding:0 24px;border-radius:var(--radius-pill);font-family:var(--body);font-size:15.5px;font-weight:700;white-space:nowrap;
+    box-shadow:0 6px 20px rgba(242,178,51,0.26),inset 0 1px 0 rgba(255,255,255,0.4);transition:transform var(--dur-press) var(--ease-out),box-shadow var(--dur-fast) ease,opacity var(--dur-fast) ease;position:relative;overflow:hidden;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
   }
-  .cta::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,0.25),transparent);transform:translateX(-100%);transition:0.5s}
-  .cta:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(221,147,80,0.42)}
-  .cta:hover::before{transform:translateX(100%)}
-  .cta:active{transform:scale(0.96)}
-  .cta.ghost{background:transparent;color:var(--text);border:1px solid var(--glass-border);box-shadow:none}
-  .cta.ghost:hover{background:var(--surface)}
+  .cta:active{transform:scale(0.97)}
+  .cta:disabled{opacity:0.4;box-shadow:none;cursor:not-allowed;filter:saturate(0.5)}
+  .cta:disabled:active{transform:none}
+  .cta.ghost{background:rgba(255,246,230,0.06);color:var(--text);border:1px solid var(--glass-border);box-shadow:none}
+  .sending{display:inline-flex;align-items:center;gap:10px;color:var(--text);font-weight:600;font-size:14.5px;min-height:52px}
+  .sending::before{content:'';width:18px;height:18px;border-radius:50%;border:2px solid var(--glass-border);border-top-color:var(--accent);animation:spin 0.7s linear infinite}
 
-  /* Cart Screen */
-  .backrow{display:flex;justify-content:space-between;align-items:center;padding:18px 18px 8px}
-  .backrow button{background:none;border:none;font-size:13px;color:rgba(255,255,255,0.82);cursor:pointer;display:flex;align-items:center;gap:6px;transition:color 0.2s;font-family:var(--body);text-shadow:0 1px 4px rgba(0,0,0,0.5)}
-  .backrow button:hover{color:var(--accent)}
-  h1.h2{font-family:var(--display);font-weight:700;font-size:22px;margin:0 18px 18px;letter-spacing:-0.02em;text-shadow:0 2px 10px rgba(0,0,0,0.6)}
-  .ticket-box{background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border-radius:var(--radius-lg);padding:22px;font-size:13px;margin:0 18px;box-shadow:var(--shadow-sm)}
-  .ticket-box .row{display:flex;justify-content:space-between;padding:6px 0;gap:10px;align-items:flex-start}
-  .ticket-box .row .note{display:block;font-size:10.5px;color:var(--accent-light);margin-top:1px;opacity:0.8}
-  .ticket-box .row .row-cat{display:block;font-size:9.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:1px}
+  /* Carrito */
+  .backrow{display:flex;justify-content:space-between;align-items:center;padding:calc(12px + var(--safe-top)) 12px 4px}
+  .backrow button{background:none;border:none;min-height:44px;padding:0 8px;font-size:14.5px;font-weight:500;color:var(--text-secondary);display:flex;align-items:center;gap:6px;transition:color var(--dur-fast) ease;font-family:var(--body);text-shadow:0 1px 4px rgba(0,0,0,0.5)}
+  .backrow button:active{color:var(--accent-light)}
+  h1.h2{font-family:var(--display);font-weight:700;font-size:40px;line-height:0.95;text-transform:uppercase;margin:6px 18px 18px;letter-spacing:0.005em;text-shadow:0 2px 10px rgba(0,0,0,0.6);text-wrap:balance}
+  .ticket-box{background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);border-radius:var(--radius-lg);padding:20px;font-size:14.5px;margin:0 16px;box-shadow:var(--shadow-sm);animation:slideUp var(--dur-base) var(--ease-out) 80ms backwards}
+  .ticket-box .row{display:flex;justify-content:space-between;padding:6px 0;gap:12px;align-items:flex-start}
+  .ticket-box .row > span:first-child{color:var(--text-secondary)}
+  .ticket-box .row > span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+  .ticket-box .row .note{display:block;font-size:13px;color:var(--accent-light);margin-top:2px}
+  .ticket-box .row .row-cat{display:block;font-size:11.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:1px}
   .ticket-box hr{border:none;border-top:1px dashed var(--glass-border);margin:10px 0}
-  .ticket-box .tot{font-weight:700;font-size:15px;font-family:var(--display);color:var(--accent-light)}
-  .status-line{margin-top:14px;font-size:11.5px;color:var(--text-secondary);line-height:1.55;border-top:1px dashed var(--glass-border);padding-top:12px}
-  .empty-cart{color:var(--text-secondary);text-align:center;padding:40px 18px;font-size:13px}
-  .cart-line{display:flex;gap:12px;align-items:flex-start;padding:12px 18px;border-bottom:1px solid var(--glass-border);animation:slideUp 0.3s ease backwards}
-  .cart-line:nth-child(1){animation-delay:0.04s}
-  .cart-line:nth-child(2){animation-delay:0.08s}
-  .cart-line:nth-child(3){animation-delay:0.12s}
-  .cart-line .ic{width:36px;height:36px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--glass-border)}
-  .cart-line .ic svg{width:18px;height:18px;color:var(--accent-light)}
-  .cart-line .info{flex:1}
-  .cart-line strong{font-size:13px;display:block;font-weight:600;margin-bottom:1px;text-shadow:0 1px 4px rgba(0,0,0,0.5)}
-  .cart-line .desc{font-size:11px;color:rgba(255,255,255,0.72);text-shadow:0 1px 4px rgba(0,0,0,0.5)}
-  .cart-line .cat-tag{display:block;font-size:10.5px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:2px;text-shadow:0 1px 4px rgba(0,0,0,0.5)}
-  .cart-line .price{font-size:14px;font-family:var(--display);font-weight:700;color:var(--accent-light);white-space:nowrap}
+  .ticket-box .tot{font-weight:700;font-size:22px;font-family:var(--display);color:var(--accent-light);align-items:baseline}
+  .ticket-box .tot > span:first-child{color:var(--accent-light);font-size:16px;letter-spacing:0.04em}
+  .status-line{margin-top:14px;font-size:13.5px;color:var(--text-secondary);line-height:1.55;border-top:1px dashed var(--glass-border);padding-top:12px}
+  .empty-cart{color:var(--text-secondary);text-align:center;padding:40px 18px;font-size:15px}
+  #cartList{margin:0 14px;border-radius:var(--radius-lg);overflow:hidden}
+  #cartList:has(.cart-line){background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);box-shadow:var(--shadow-sm)}
+  .cart-line{display:flex;gap:12px;align-items:flex-start;padding:14px 14px;border-bottom:1px solid var(--glass-border);animation:slideUp 320ms var(--ease-out) backwards;animation-delay:calc(min(var(--i,0),8) * 40ms)}
+  #cartList .cart-line:last-child{border-bottom:none}
+  #envioLine{margin:10px 14px 0;border:1px solid var(--glass-border);border-radius:var(--radius-lg);background:var(--glass)}
+  .cart-line .ic{width:40px;height:40px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--accent-line);color:var(--accent-light)}
+  .cart-line .ic svg{width:19px;height:19px;color:var(--accent-light)}
+  .cart-line .info{flex:1;min-width:0}
+  .cart-line strong{font-size:15px;display:block;font-weight:600;margin-bottom:2px;line-height:1.3}
+  .cart-line .desc{font-size:13px;color:var(--text-secondary);display:block}
+  .cart-line .cat-tag{display:block;font-size:11.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:2px}
+  .cart-line .price{font-size:20px;font-family:var(--display);font-weight:700;color:var(--accent-light);white-space:nowrap;font-variant-numeric:tabular-nums}
   .cart-line-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
-  .cart-line-del{width:26px;height:26px;border-radius:50%;border:1px solid var(--glass-border);background:rgba(20,15,12,0.5);color:rgba(255,255,255,0.7);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition);flex-shrink:0}
-  .cart-line-del svg{width:13px;height:13px}
-  .cart-line-del:hover{background:rgba(220,70,60,0.16);border-color:rgba(220,70,60,0.4);color:#ff8f80}
-  .cart-line-del:active{transform:scale(0.9)}
+  .cart-line-del{width:40px;height:40px;border-radius:50%;border:1px solid var(--glass-border);background:rgba(18,14,11,0.5);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;transition:var(--transition);flex-shrink:0}
+  .cart-line-del svg{width:15px;height:15px}
+  .cart-line-del:active{transform:scale(0.9);background:var(--danger-bg);border-color:var(--danger-line);color:var(--danger)}
 
-  /* Confirm */
-  .confirm-icon{width:60px;height:60px;margin:18px auto 14px;background:linear-gradient(135deg,rgba(74,222,128,0.15),rgba(74,222,128,0.05));border:1px solid rgba(74,222,128,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 26px rgba(74,222,128,0.12)}
-  .confirm-icon svg{width:26px;height:26px;color:var(--success)}
+  /* Confirmación */
+  .confirm-icon{width:72px;height:72px;margin:calc(28px + var(--safe-top)) auto 16px;background:rgba(92,214,141,0.12);border:1px solid rgba(92,214,141,0.35);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(92,214,141,0.14);animation:logoIn 500ms var(--ease-out) both}
+  .confirm-icon svg{width:32px;height:32px;color:var(--success);stroke-dasharray:24;stroke-dashoffset:24;animation:drawCheck 420ms var(--ease-out) 260ms forwards}
+  @keyframes drawCheck{to{stroke-dashoffset:0}}
 
-  /* Half card */
-  .half-card{border-radius:var(--radius-lg);padding:18px 16px;margin:0 18px 18px;background:linear-gradient(160deg,rgba(185,106,66,0.10),rgba(221,147,80,0.05));border:1px dashed rgba(221,147,80,0.22);backdrop-filter:blur(10px) saturate(160%);-webkit-backdrop-filter:blur(10px) saturate(160%);position:relative;overflow:hidden}
-  .half-card::before{content:'';position:absolute;top:-40%;right:-25%;width:180px;height:180px;background:radial-gradient(circle,rgba(221,147,80,0.07),transparent 70%);pointer-events:none}
-  .half-card .htitle{font-family:var(--display);font-weight:700;font-size:14px;margin-bottom:3px;display:flex;align-items:center;gap:7px;position:relative;z-index:1}
-  .half-card .hsub{font-size:11.5px;color:var(--text-secondary);margin-bottom:12px;line-height:1.45;position:relative;z-index:1}
-  .half-row{display:flex;gap:8px;margin-bottom:10px;position:relative;z-index:1}
-  .half-row select{flex:1;background:rgba(0,0,0,0.35);color:var(--text);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:10px 8px;font-size:12.5px;font-family:var(--body);outline:none;cursor:pointer}
+  /* Tarjetas "armá tu pedido" (mitad y mitad / docena) */
+  .half-card{border-radius:var(--radius-lg);padding:18px 16px;margin:4px 0 8px;background:linear-gradient(160deg,rgba(242,178,51,0.12),rgba(217,134,28,0.04)),var(--glass);border:1px solid var(--accent-line);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);position:relative;overflow:hidden;animation:slideUp 360ms var(--ease-out) backwards;animation-delay:calc(min(var(--i,0),8) * 40ms)}
+  .half-card .htitle{font-family:var(--display);font-weight:700;font-size:22px;text-transform:uppercase;line-height:1.05;margin-bottom:4px;display:flex;align-items:center;gap:8px;color:var(--text)}
+  .half-card .htitle svg{color:var(--accent-light)}
+  .half-card .hsub{font-size:14px;color:var(--text-secondary);margin-bottom:14px;line-height:1.45}
+  .half-card .pay-options{gap:8px}
+  .half-row{display:flex;gap:8px;margin-bottom:10px}
+  .half-row select{flex:1;min-width:0;min-height:48px;appearance:none;-webkit-appearance:none;color:var(--text);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:10px 32px 10px 12px;font-size:16px;font-family:var(--body);outline:none;
+    background:rgba(0,0,0,0.35) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23b8b0a4' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center;
+    text-overflow:ellipsis;transition:border-color var(--dur-fast) ease}
   .half-row select:focus{border-color:var(--accent)}
-  .half-foot{display:flex;align-items:center;justify-content:space-between;margin-top:6px;position:relative;z-index:1}
-  .half-price{font-family:var(--display);font-weight:700;color:var(--accent-light);font-size:15px}
-  .half-add{background:linear-gradient(135deg,var(--accent-light),var(--accent));border:none;color:#1a0f00;font-family:var(--display);font-weight:700;font-size:12px;padding:10px 16px;border-radius:var(--radius-md);cursor:pointer;box-shadow:0 4px 14px rgba(221,147,80,0.28);transition:var(--transition)}
-  .half-add:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(221,147,80,0.38)}
+  .half-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+  .half-price{font-family:var(--display);font-weight:700;color:var(--accent-light);font-size:26px;font-variant-numeric:tabular-nums}
+  .half-add{background:linear-gradient(180deg,var(--accent-light) -40%,var(--accent) 60%,var(--accent-deep) 150%);border:none;color:var(--on-accent);font-family:var(--body);font-weight:700;font-size:15px;min-height:46px;padding:0 22px;border-radius:var(--radius-pill);box-shadow:0 4px 14px rgba(242,178,51,0.24),inset 0 1px 0 rgba(255,255,255,0.4);transition:transform var(--dur-press) var(--ease-out)}
   .half-add:active{transform:scale(0.96)}
+  .half-add.added{background:var(--success);color:#062312}
+
 
   ::-webkit-scrollbar{width:3px}
   ::-webkit-scrollbar-track{background:transparent}
   ::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:3px}
-  @media(hover:none){.product-card:hover{transform:none}.btn-add-sm:hover{transform:none}.cta:hover{transform:none}}
+
+  /* Hover solo en dispositivos con mouse de verdad: en el celular el "hover" queda pegado al tocar. */
+  @media (hover:hover) and (pointer:fine){
+    .cta-primary:hover{box-shadow:0 14px 38px rgba(242,178,51,0.36),inset 0 1px 0 rgba(255,255,255,0.45)}
+    .cta:hover{box-shadow:0 8px 26px rgba(242,178,51,0.36),inset 0 1px 0 rgba(255,255,255,0.4)}
+    .cta.ghost:hover{background:var(--surface-hover)}
+    .product-card:hover{border-color:var(--glass-border-hover)}
+    .topbar-back:hover,.cart-btn:hover,.video-close:hover,.alias-copy-btn:hover{background:rgba(40,33,26,0.75)}
+    .selector-opt:not(:disabled):hover{border-color:var(--glass-border-hover)}
+    .video-link:hover{border-color:var(--accent-line)}
+    .note-link-sm:hover,.backrow button:hover{color:var(--accent-light)}
+    .cart-line-del:hover{background:var(--danger-bg);border-color:var(--danger-line);color:var(--danger)}
+    .pay-opt:not(.active):hover{border-color:var(--glass-border-hover);color:var(--text)}
+  }
+
+  /* Pantallas muy angostas (iPhone SE, Android chicos): títulos y plato un poco más chicos. */
+  @media (max-width:360px){
+    .cat-name-block h1,h1.h2{font-size:34px}
+    .product-info .price{font-size:22px}
+    .otp-slots{gap:10px}
+    .otp-slot{width:52px}
+    .cta{padding:0 18px;font-size:15px}
+  }
+  /* Celulares bajitos o en horizontal: se achica el plato para que la lista asome. */
+  @media (max-height:640px){
+    .logo-container,#screen-landing .logo-container{width:180px;height:180px;margin-bottom:14px}
+    .logo-img,#screen-landing .logo-img{width:168px;height:168px}
+    .logo-trazo,#screen-landing .logo-trazo,#screen-selector .logo-trazo{width:168px;height:168px;--trazo:8}
+    .cat-plate-zone{--d:210px}
+  }
+  /* En pantallas grandes (tablet/PC) la app sigue siendo una columna de celular, con un marco sutil. */
+  @media (min-width:600px){
+    .wrap{box-shadow:0 0 0 1px rgba(255,238,210,0.06),0 30px 120px rgba(0,0,0,0.6)}
+  }
+
+  /* Sin transparencias para quien las desactiva en el sistema. */
+  @media (prefers-reduced-transparency:reduce){
+    .product-card,.ticket-box,.selector-opt,.mesa-badge,.bottombar,.half-card,#cartList:has(.cart-line){background:var(--bg-elevated);backdrop-filter:none;-webkit-backdrop-filter:none}
+  }
+  /* Movimiento reducido: menos y más suave, no cero. Se quedan los fundidos, se van los desplazamientos. */
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:1ms!important;animation-delay:0ms!important;animation-iteration-count:1!important;transition-duration:1ms!important;scroll-behavior:auto!important}
+    #fotoGrande{transition:opacity 200ms ease!important;transform:none}
+  }
 </style>
 </head>
 <body>
@@ -389,6 +526,7 @@
     <div class="landing-glow"></div>
     <div class="logo-container">
       <div class="logo-ring"></div>
+      <svg class="logo-trazo" viewBox="0 0 949 949" aria-hidden="true"><path d="M449,45 493,45 528,48 575,57 620,71 649,83 696,108 736,136 764,160 794,191 816,218 852,275 850,278 633,277 625,278 625,293 861,294 879,337 888,368 896,406 901,454 900,508 891,568 875,622 860,658 851,674 625,674 625,690 840,690 841,693 820,725 798,753 771,781 770,780 770,744 746,744 745,805 712,830 689,843 688,744 664,744 664,857 639,870 608,881 607,744 582,744 582,888 580,890 564,894 526,900 525,744 502,743 501,901 499,903 480,904 445,903 443,899 444,747 441,743 419,744 418,900 393,897 362,889 361,743 337,744 336,882 313,874 280,858 280,744 256,744 255,844 249,842 223,825 199,806 198,744 174,744 174,781 172,782 129,734 101,692 102,690 315,690 315,674 92,674 88,669 71,632 56,587 48,552 42,504 42,444 47,402 60,348 74,309 83,293 315,294 314,277 92,278 90,276 105,249 128,216 152,187 183,156 217,128 255,103 289,85 325,70 364,58 409,49Z" pathLength="1" style="--i:0"/><path d="M444,0 443,2 418,3 385,8 345,17 297,33 253,53 215,75 181,99 144,131 108,169 78,209 53,250 28,305 12,354 2,409 0,410 0,538 2,539 11,590 23,630 37,666 57,706 71,730 105,776 132,806 169,840 205,867 239,888 279,908 333,928 367,937 406,944 449,948 495,948 536,944 576,937 619,925 666,907 712,883 746,861 792,824 828,787 850,760 883,710 902,673 916,640 928,603 941,541 945,496 945,449 942,415 934,369 923,329 904,279 878,230 851,190 821,154 791,124 744,86 706,62 673,45 629,27 581,13 533,4 500,2 499,0Z" pathLength="1" style="--i:1"/><path d="M454,4 490,4 536,8 595,20 638,34 671,48 719,74 758,101 792,130 825,164 853,199 878,237 897,273 917,322 929,363 937,404 941,441 942,491 939,528 933,568 923,608 909,648 887,695 866,731 830,779 785,825 741,860 696,888 652,909 600,927 552,938 500,944 441,944 417,942 365,933 319,920 281,905 243,886 197,857 162,829 124,792 105,770 76,730 49,683 33,647 16,595 6,548 1,502 1,449 6,400 16,353 28,315 43,278 68,231 90,198 120,161 155,126 191,96 222,75 265,51 304,34 359,17 407,8Z" pathLength="1" style="--i:2"/><path d="M440,9 379,17 339,27 296,42 255,61 222,80 185,106 148,138 115,173 84,214 63,248 41,293 25,338 14,381 7,426 5,457 6,511 12,557 21,597 35,640 59,693 79,727 107,766 137,800 173,833 221,868 263,892 299,908 334,920 382,932 422,938 449,940 493,940 522,938 580,928 612,919 648,906 687,888 728,864 762,839 794,811 828,775 854,741 874,710 898,663 917,612 928,570 936,516 936,433 928,378 918,339 905,302 887,262 860,216 841,190 817,161 776,121 744,96 709,73 672,53 634,37 581,21 533,12 480,8Z" pathLength="1" style="--i:3"/><path d="M445,14 495,14 530,17 575,25 626,40 667,57 698,73 737,98 768,122 809,161 833,189 864,233 878,257 897,297 915,348 924,386 931,436 932,496 929,532 923,568 913,607 896,654 880,688 856,728 833,760 797,800 770,825 728,857 688,881 656,897 600,917 547,929 508,934 449,935 425,933 369,924 329,913 287,897 249,878 203,849 169,822 130,784 109,759 80,718 59,681 47,656 28,602 16,549 11,506 10,465 12,430 16,399 29,343 43,302 65,256 90,215 120,176 150,144 193,107 226,84 273,58 305,44 356,28 399,19Z" pathLength="1" style="--i:4"/><path d="M434,33 389,39 347,49 299,66 265,82 231,102 190,132 160,159 133,188 109,219 87,253 65,297 47,345 34,401 30,433 29,504 35,552 47,603 60,640 84,690 110,731 126,752 147,776 188,815 227,844 255,861 303,884 342,898 372,906 418,914 465,917 504,916 545,911 579,904 610,895 656,877 696,856 738,828 768,803 803,768 830,734 850,704 874,659 889,622 899,590 909,544 914,492 913,439 908,399 896,348 880,303 863,267 832,217 811,190 795,172 756,135 729,114 690,89 648,68 602,51 568,42 520,34 494,32Z" pathLength="1" style="--i:5"/><path d="M353,190 362,203 365,215 365,234 360,253 361,268 358,270 353,270 364,293 378,309 396,323 416,333 439,340 463,343 488,342 512,337 537,326 557,312 569,300 583,278 585,270 575,268 583,245 583,230 580,225 565,214 563,211 562,199 545,181 547,197 542,208 542,214 553,228 553,240 548,245 541,247 535,245 530,240 529,230 534,219 534,214 526,210 523,204 531,189 523,193 517,199 513,208 512,219 516,231 515,240 508,246 503,247 497,245 492,240 490,236 490,224 492,219 504,208 505,199 503,190 511,181 514,174 513,165 512,171 505,177 496,172 495,163 500,152 492,158 489,164 489,175 496,190 496,197 492,201 486,201 483,198 475,179 474,195 476,207 481,220 481,232 478,239 473,244 468,244 464,240 464,235 468,226 468,218 458,197 461,187 459,172 454,164 441,151 431,145 443,162 447,174 446,181 438,198 436,207 437,220 445,240 445,252 442,259 434,266 423,265 417,256 418,249 426,235 425,225 420,221 421,231 416,237 412,237 407,233 409,223 432,192 434,184 433,172 430,166 423,159 423,173 421,178 416,182 407,183 403,181 398,174 400,157 410,135 406,135 391,143 381,153 377,161 378,180 384,192 393,204 393,208 388,213 382,213 377,208 375,199 371,194Z" pathLength="1" style="--i:6"/><path d="M301,377 301,542 322,542 323,437 347,511 346,541 368,542 368,378 349,377 346,379 347,424 345,453 322,377Z" pathLength="1" style="--i:7"/><path d="M477,378 477,542 499,541 499,438 501,439 523,509 523,542 544,542 544,378 523,378 522,454 499,378Z" pathLength="1" style="--i:8"/><path d="M334,669 335,682 342,688 357,692 568,693 606,691 605,689 584,678 544,663 499,655 441,650 440,662 434,669 429,671 417,671 391,667 363,670 354,668 345,661 338,663Z" pathLength="1" style="--i:9"/><path d="M405,378 393,386 390,391 388,401 388,542 409,542 409,485 411,481 434,481 436,483 436,542 457,542 456,394 450,383 440,378Z" pathLength="1" style="--i:10"/><path d="M582,378 575,381 569,387 565,398 566,526 570,534 581,541 622,541 633,534 638,523 638,397 633,385 624,379 611,377Z" pathLength="1" style="--i:11"/><path d="M592,397 610,397 614,399 617,404 617,516 614,521 608,523 592,522 586,515 586,405 587,401Z" pathLength="1" style="--i:12"/><path d="M415,567 411,568 407,572 407,593 422,604 422,616 418,619 414,616 413,612 407,612 407,620 412,625 427,624 429,620 429,599 414,589 414,576 419,574 422,576 422,582 428,583 429,572 424,568Z" pathLength="1" style="--i:13"/><path d="M569,568 568,624 576,625 576,603 580,602 586,625 592,625 588,601 592,596 592,573 590,569 587,568Z" pathLength="1" style="--i:14"/><path d="M352,568 352,624 359,625 359,603 363,602 365,604 369,625 376,625 371,603 375,597 375,572 371,568Z" pathLength="1" style="--i:15"/><path d="M541,568 537,573 537,625 544,625 545,604 553,605 554,625 560,625 560,572 556,568Z" pathLength="1" style="--i:16"/><path d="M383,568 383,625 401,625 401,619 392,619 390,617 390,600 400,598 400,592 390,591 390,575 401,574 401,568Z" pathLength="1" style="--i:17"/><path d="M416,397 429,397 435,402 436,405 435,462 411,462 409,460 409,407 411,401Z" pathLength="1" style="--i:18"/><path d="M508,567 506,569 507,625 526,625 530,621 530,600 526,596 530,588 529,573 524,568Z" pathLength="1" style="--i:19"/><path d="M434,568 434,574 439,574 441,576 441,625 448,625 448,576 450,574 456,574 456,568Z" pathLength="1" style="--i:20"/><path d="M465,568 461,572 461,620 466,625 483,624 486,619 486,573 481,568Z" pathLength="1" style="--i:21"/><path d="M470,574 476,574 479,577 479,616 474,619 471,619 468,616 468,576Z" pathLength="1" style="--i:22"/><path d="M546,574 551,574 553,576 554,594 552,597 544,596 544,576Z" pathLength="1" style="--i:23"/><path d="M577,574 582,574 585,577 585,593 581,596 576,594Z" pathLength="1" style="--i:24"/><path d="M361,574 366,574 368,577 368,593 365,596 359,594 359,576Z" pathLength="1" style="--i:25"/><path d="M515,599 521,599 523,601 523,617 520,619 516,619 513,614 513,602Z" pathLength="1" style="--i:26"/><path d="M515,574 520,574 522,576 522,589 520,592 515,592 513,590 513,579Z" pathLength="1" style="--i:27"/></svg>
       <img class="logo-img" id="logoImg" alt="Nano Resto Bar" onload="this.style.display='block';document.getElementById('logoFlame').style.display='none'" onerror="this.style.display='none'">
       <svg class="logo-flame" id="logoFlame" viewBox="0 0 40 40" fill="none" stroke="url(#g1)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F6D57B"/><stop offset="100%" stop-color="#E8763C"/></linearGradient></defs>
@@ -401,7 +539,7 @@
       <span class="dot"></span>
       <div class="mesa-badge-text"><small>MESA</small><b id="mesaNum">5</b></div>
     </div>
-    <button class="cta-primary" onclick="openMenu()">Ver el menú →</button>
+    <button class="cta-primary" onclick="openMenu()">Ver el menú <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
     <div class="landing-note">Mirá el menú y los precios desde acá. Para pedir, avisale directamente a tu mesero o moza.</div>
   </div>
 </div>
@@ -409,9 +547,10 @@
 <div class="screen" id="screen-selector">
   <div class="landing">
     <div class="landing-glow"></div>
-    <div class="logo-container" style="width:260px;height:260px;margin-bottom:16px;">
+    <div class="logo-container" style="width:170px;height:170px;margin-bottom:20px;">
       <div class="logo-ring"></div>
-      <img class="logo-img" id="logoImgSelector" alt="Nano Resto Bar" style="width:210px;height:210px;" onload="this.style.display='block';document.getElementById('logoFlameSelector').style.display='none'" onerror="this.style.display='none'">
+      <svg class="logo-trazo" viewBox="0 0 949 949" aria-hidden="true"><path d="M449,45 493,45 528,48 575,57 620,71 649,83 696,108 736,136 764,160 794,191 816,218 852,275 850,278 633,277 625,278 625,293 861,294 879,337 888,368 896,406 901,454 900,508 891,568 875,622 860,658 851,674 625,674 625,690 840,690 841,693 820,725 798,753 771,781 770,780 770,744 746,744 745,805 712,830 689,843 688,744 664,744 664,857 639,870 608,881 607,744 582,744 582,888 580,890 564,894 526,900 525,744 502,743 501,901 499,903 480,904 445,903 443,899 444,747 441,743 419,744 418,900 393,897 362,889 361,743 337,744 336,882 313,874 280,858 280,744 256,744 255,844 249,842 223,825 199,806 198,744 174,744 174,781 172,782 129,734 101,692 102,690 315,690 315,674 92,674 88,669 71,632 56,587 48,552 42,504 42,444 47,402 60,348 74,309 83,293 315,294 314,277 92,278 90,276 105,249 128,216 152,187 183,156 217,128 255,103 289,85 325,70 364,58 409,49Z" pathLength="1" style="--i:0"/><path d="M444,0 443,2 418,3 385,8 345,17 297,33 253,53 215,75 181,99 144,131 108,169 78,209 53,250 28,305 12,354 2,409 0,410 0,538 2,539 11,590 23,630 37,666 57,706 71,730 105,776 132,806 169,840 205,867 239,888 279,908 333,928 367,937 406,944 449,948 495,948 536,944 576,937 619,925 666,907 712,883 746,861 792,824 828,787 850,760 883,710 902,673 916,640 928,603 941,541 945,496 945,449 942,415 934,369 923,329 904,279 878,230 851,190 821,154 791,124 744,86 706,62 673,45 629,27 581,13 533,4 500,2 499,0Z" pathLength="1" style="--i:1"/><path d="M454,4 490,4 536,8 595,20 638,34 671,48 719,74 758,101 792,130 825,164 853,199 878,237 897,273 917,322 929,363 937,404 941,441 942,491 939,528 933,568 923,608 909,648 887,695 866,731 830,779 785,825 741,860 696,888 652,909 600,927 552,938 500,944 441,944 417,942 365,933 319,920 281,905 243,886 197,857 162,829 124,792 105,770 76,730 49,683 33,647 16,595 6,548 1,502 1,449 6,400 16,353 28,315 43,278 68,231 90,198 120,161 155,126 191,96 222,75 265,51 304,34 359,17 407,8Z" pathLength="1" style="--i:2"/><path d="M440,9 379,17 339,27 296,42 255,61 222,80 185,106 148,138 115,173 84,214 63,248 41,293 25,338 14,381 7,426 5,457 6,511 12,557 21,597 35,640 59,693 79,727 107,766 137,800 173,833 221,868 263,892 299,908 334,920 382,932 422,938 449,940 493,940 522,938 580,928 612,919 648,906 687,888 728,864 762,839 794,811 828,775 854,741 874,710 898,663 917,612 928,570 936,516 936,433 928,378 918,339 905,302 887,262 860,216 841,190 817,161 776,121 744,96 709,73 672,53 634,37 581,21 533,12 480,8Z" pathLength="1" style="--i:3"/><path d="M445,14 495,14 530,17 575,25 626,40 667,57 698,73 737,98 768,122 809,161 833,189 864,233 878,257 897,297 915,348 924,386 931,436 932,496 929,532 923,568 913,607 896,654 880,688 856,728 833,760 797,800 770,825 728,857 688,881 656,897 600,917 547,929 508,934 449,935 425,933 369,924 329,913 287,897 249,878 203,849 169,822 130,784 109,759 80,718 59,681 47,656 28,602 16,549 11,506 10,465 12,430 16,399 29,343 43,302 65,256 90,215 120,176 150,144 193,107 226,84 273,58 305,44 356,28 399,19Z" pathLength="1" style="--i:4"/><path d="M434,33 389,39 347,49 299,66 265,82 231,102 190,132 160,159 133,188 109,219 87,253 65,297 47,345 34,401 30,433 29,504 35,552 47,603 60,640 84,690 110,731 126,752 147,776 188,815 227,844 255,861 303,884 342,898 372,906 418,914 465,917 504,916 545,911 579,904 610,895 656,877 696,856 738,828 768,803 803,768 830,734 850,704 874,659 889,622 899,590 909,544 914,492 913,439 908,399 896,348 880,303 863,267 832,217 811,190 795,172 756,135 729,114 690,89 648,68 602,51 568,42 520,34 494,32Z" pathLength="1" style="--i:5"/><path d="M353,190 362,203 365,215 365,234 360,253 361,268 358,270 353,270 364,293 378,309 396,323 416,333 439,340 463,343 488,342 512,337 537,326 557,312 569,300 583,278 585,270 575,268 583,245 583,230 580,225 565,214 563,211 562,199 545,181 547,197 542,208 542,214 553,228 553,240 548,245 541,247 535,245 530,240 529,230 534,219 534,214 526,210 523,204 531,189 523,193 517,199 513,208 512,219 516,231 515,240 508,246 503,247 497,245 492,240 490,236 490,224 492,219 504,208 505,199 503,190 511,181 514,174 513,165 512,171 505,177 496,172 495,163 500,152 492,158 489,164 489,175 496,190 496,197 492,201 486,201 483,198 475,179 474,195 476,207 481,220 481,232 478,239 473,244 468,244 464,240 464,235 468,226 468,218 458,197 461,187 459,172 454,164 441,151 431,145 443,162 447,174 446,181 438,198 436,207 437,220 445,240 445,252 442,259 434,266 423,265 417,256 418,249 426,235 425,225 420,221 421,231 416,237 412,237 407,233 409,223 432,192 434,184 433,172 430,166 423,159 423,173 421,178 416,182 407,183 403,181 398,174 400,157 410,135 406,135 391,143 381,153 377,161 378,180 384,192 393,204 393,208 388,213 382,213 377,208 375,199 371,194Z" pathLength="1" style="--i:6"/><path d="M301,377 301,542 322,542 323,437 347,511 346,541 368,542 368,378 349,377 346,379 347,424 345,453 322,377Z" pathLength="1" style="--i:7"/><path d="M477,378 477,542 499,541 499,438 501,439 523,509 523,542 544,542 544,378 523,378 522,454 499,378Z" pathLength="1" style="--i:8"/><path d="M334,669 335,682 342,688 357,692 568,693 606,691 605,689 584,678 544,663 499,655 441,650 440,662 434,669 429,671 417,671 391,667 363,670 354,668 345,661 338,663Z" pathLength="1" style="--i:9"/><path d="M405,378 393,386 390,391 388,401 388,542 409,542 409,485 411,481 434,481 436,483 436,542 457,542 456,394 450,383 440,378Z" pathLength="1" style="--i:10"/><path d="M582,378 575,381 569,387 565,398 566,526 570,534 581,541 622,541 633,534 638,523 638,397 633,385 624,379 611,377Z" pathLength="1" style="--i:11"/><path d="M592,397 610,397 614,399 617,404 617,516 614,521 608,523 592,522 586,515 586,405 587,401Z" pathLength="1" style="--i:12"/><path d="M415,567 411,568 407,572 407,593 422,604 422,616 418,619 414,616 413,612 407,612 407,620 412,625 427,624 429,620 429,599 414,589 414,576 419,574 422,576 422,582 428,583 429,572 424,568Z" pathLength="1" style="--i:13"/><path d="M569,568 568,624 576,625 576,603 580,602 586,625 592,625 588,601 592,596 592,573 590,569 587,568Z" pathLength="1" style="--i:14"/><path d="M352,568 352,624 359,625 359,603 363,602 365,604 369,625 376,625 371,603 375,597 375,572 371,568Z" pathLength="1" style="--i:15"/><path d="M541,568 537,573 537,625 544,625 545,604 553,605 554,625 560,625 560,572 556,568Z" pathLength="1" style="--i:16"/><path d="M383,568 383,625 401,625 401,619 392,619 390,617 390,600 400,598 400,592 390,591 390,575 401,574 401,568Z" pathLength="1" style="--i:17"/><path d="M416,397 429,397 435,402 436,405 435,462 411,462 409,460 409,407 411,401Z" pathLength="1" style="--i:18"/><path d="M508,567 506,569 507,625 526,625 530,621 530,600 526,596 530,588 529,573 524,568Z" pathLength="1" style="--i:19"/><path d="M434,568 434,574 439,574 441,576 441,625 448,625 448,576 450,574 456,574 456,568Z" pathLength="1" style="--i:20"/><path d="M465,568 461,572 461,620 466,625 483,624 486,619 486,573 481,568Z" pathLength="1" style="--i:21"/><path d="M470,574 476,574 479,577 479,616 474,619 471,619 468,616 468,576Z" pathLength="1" style="--i:22"/><path d="M546,574 551,574 553,576 554,594 552,597 544,596 544,576Z" pathLength="1" style="--i:23"/><path d="M577,574 582,574 585,577 585,593 581,596 576,594Z" pathLength="1" style="--i:24"/><path d="M361,574 366,574 368,577 368,593 365,596 359,594 359,576Z" pathLength="1" style="--i:25"/><path d="M515,599 521,599 523,601 523,617 520,619 516,619 513,614 513,602Z" pathLength="1" style="--i:26"/><path d="M515,574 520,574 522,576 522,589 520,592 515,592 513,590 513,579Z" pathLength="1" style="--i:27"/></svg>
+      <img class="logo-img" id="logoImgSelector" alt="Nano Resto Bar" style="width:160px;height:160px;" onload="this.style.display='block';document.getElementById('logoFlameSelector').style.display='none'" onerror="this.style.display='none'">
       <svg class="logo-flame" id="logoFlameSelector" viewBox="0 0 40 40" fill="none" stroke="url(#g1)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 4c2 5-2 6-2 10 0 2 1.5 3 3 3s3-1.5 3-3c3 2 5 6 5 10 0 6-4 11-9 11S9 30 9 24c0-4 2-7 4-9 0 2 1 3.5 3 3.5 3 0 3-3 2-6C17 9 18 6 20 4z"/>
       </svg>
@@ -420,12 +559,12 @@
     <div class="greeting-sub">elegí una opción para ver el menú</div>
     <div class="selector-options">
       <button class="selector-opt" id="selectorRetiroBtn" onclick="elegirCanal('retiro')">
-        <span class="selector-opt-icon">🏠</span>
-        <span class="selector-opt-text"><b>Retiro en el local</b><small>Pedís y pasás a buscarlo</small></span>
+        <span class="selector-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/></svg></span>
+        <span class="selector-opt-text"><b>Retiro en el local</b><small>Pedís y pasás a buscarlo</small></span><svg class="selector-opt-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
       </button>
       <button class="selector-opt" id="selectorEnvioBtn" onclick="elegirCanal('envio')">
-        <span class="selector-opt-icon">🛵</span>
-        <span class="selector-opt-text"><b>Envío a domicilio</b><small id="envioCostoAviso">Te lo llevamos hasta tu casa</small></span>
+        <span class="selector-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg></span>
+        <span class="selector-opt-text"><b>Envío a domicilio</b><small id="envioCostoAviso">Te lo llevamos hasta tu casa</small></span><svg class="selector-opt-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
       </button>
     </div>
     <div class="landing-note" id="horarioCerradoAviso" style="display:none"></div>
@@ -436,7 +575,7 @@
 <div class="screen" id="screen-mesa-invalida">
   <div class="landing">
     <div class="landing-glow"></div>
-    <div style="font-size:44px;margin-bottom:14px;">⚠️</div>
+    <div class="state-icon warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
     <div class="error-title">Este QR no es válido</div>
     <div class="landing-note" style="margin-top:16px;">
       Pedile al mozo que te acerque la carta o que verifique el cartel de la mesa.
@@ -448,11 +587,11 @@
   <div class="cat-backdrop" id="catBackdrop"></div>
 
   <div class="topbar" id="catTopbar">
-    <button class="topbar-back" onclick="volverDesdeMenu()">
+    <button class="topbar-back" onclick="volverDesdeMenu()" aria-label="Volver">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
     <div class="topbar-spacer"></div>
-    <button class="cart-btn" id="cartBtn" onclick="goToCart()">
+    <button class="cart-btn" id="cartBtn" onclick="goToCart()" aria-label="Ver pedido">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
       <span class="cart-badge" id="cartBadge" style="display:none">0</span>
     </button>
@@ -461,15 +600,13 @@
   <div id="menuStatus" class="menu-status" style="display:none;"></div>
 
   <div id="menuContent">
-    <div class="cat-index" id="catIndex"></div>
 
     <div class="cat-plate-zone" id="catPlateZone">
-      <div class="cat-peek prev" id="catPeekPrev"><img id="catPeekPrevImg" alt="Categoría anterior"></div>
-      <div class="cat-peek next" id="catPeekNext"><img id="catPeekNextImg" alt="Categoría siguiente"></div>
     </div>
 
     <div class="cat-name-block" id="catNameBlock"></div>
-    <div class="cat-swipe-hint">Deslizá o tocá una miniatura del costado</div>
+    <div class="cat-dots" id="catDots" aria-hidden="true"></div>
+    <div class="cat-swipe-hint">Girá la rueda o tocá un plato</div>
 
     <div class="section-divider"></div>
 
@@ -478,11 +615,11 @@
 </div>
 
 <div class="screen" id="screen-cart">
-  <div class="backrow"><button onclick="backToMenu()">← seguir pidiendo</button></div>
+  <div class="backrow"><button onclick="backToMenu()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Seguir pidiendo</button></div>
   <h1 class="h2">Tu pedido</h1>
   <div id="cartList"></div>
   <div id="envioLine" class="cart-line" style="display:none;">
-    <div class="ic">🛵</div>
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg></div>
     <div class="info"><strong>Costo de envío</strong><span class="desc">Se suma al total del pedido</span></div>
     <div class="price"></div>
   </div>
@@ -520,7 +657,7 @@
 <div class="screen" id="screen-verificar">
   <div class="landing">
     <div class="landing-glow"></div>
-    <div style="font-size:40px;margin-bottom:10px;" id="otpEmoji">📲</div>
+    <div class="state-icon" id="otpEmoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg></div>
     <div class="error-title" id="otpTitle">Confirmá tu número</div>
     <div class="landing-note" style="margin-top:10px;" id="otpSub">
       Te enviamos un código de 4 dígitos por WhatsApp al número que ingresaste.
@@ -556,9 +693,23 @@
   <div class="video-box">
     <div class="video-head">
       <span id="videoTitle"></span>
-      <button class="video-close" onclick="cerrarVideo()">✕</button>
+      <button class="video-close" onclick="cerrarVideo()" aria-label="Cerrar">✕</button>
     </div>
     <video id="videoPlayer" playsinline controls loop preload="none"></video>
+  </div>
+</div>
+
+<div class="foto-overlay" id="fotoOverlay" onclick="if(event.target===this)cerrarFoto()">
+  <div class="foto-box">
+    <div class="video-head">
+      <span id="fotoTitle"></span>
+      <button class="video-close" onclick="cerrarFoto()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="foto-frame">
+      <div class="spinner" id="fotoSpinner"></div>
+      <img id="fotoGrande" alt="" decoding="async" width="600" height="800">
+    </div>
+    <div class="foto-hint">Imagen ilustrativa · tocá afuera para cerrar</div>
   </div>
 </div>
 
@@ -579,6 +730,16 @@ const ICONS={
   cerveza:'<path d="M9.5 12h14.5v18.5c0 2.2-2.2 4-4.9 4h-4.7c-2.7 0-4.9-1.8-4.9-4V12z"/><path d="M24 16.5h4.2c2.1 0 3.3 1.2 3.3 3.2v3.6c0 2-1.2 3.2-3.3 3.2H24"/><path d="M9.5 12c0-2.3 1.4-4.3 3.5-4.3h7.5c2.1 0 3.5 2 3.5 4.3"/>',
   gaseosa:'<path d="M11 12h18l-2.2 19.5a2 2 0 01-2 1.8H15.2a2 2 0 01-2-1.8L11 12z"/><line x1="10" y1="12" x2="30" y2="12"/><line x1="25" y1="8.5" x2="29" y2="16.5"/><line x1="14" y1="19" x2="26" y2="19"/>',
   vino:'<path d="M13 6h14l-1 8.5c-.8 5-4.3 8-6 8s-5.2-3-6-8L13 6z"/><line x1="20" y1="22.5" x2="20" y2="31"/><line x1="14" y1="34" x2="26" y2="34"/>'
+};
+// Íconos de interfaz (paths de Lucide): reemplazan a los emojis, que se ven distinto en cada celular.
+const UI_ICONS={
+  nota:'<svg class="note-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.38 3.62a1 1 0 0 1 3 3L7.37 18.64a2 2 0 0 1-.86.5l-2.87.84a.5.5 0 0 1-.62-.62l.84-2.87a2 2 0 0 1 .5-.86z"/></svg>',
+  foto:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>',
+  video:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.52.85l12-7.5a1 1 0 0 0 0-1.7l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>',
+  mas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  flecha:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
+  celular:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>',
+  ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>',
 };
 function ic(key,size=40){return `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="width:${size}px;height:${size}px">${ICONS[key]||ICONS.plato}</svg>`}
 
@@ -634,6 +795,7 @@ function diaYMinutosArt(fecha){
 }
 
 function estaAbiertoRetiroEnvio(fecha = new Date()){
+  if(typeof MODO_LOCAL!=='undefined' && MODO_LOCAL) return true;
   const { dia, minutos } = diaYMinutosArt(fecha);
   if ((HORARIO_RETIRO_ENVIO[dia] || []).some(([ini, fin]) => minutos >= ini && minutos < fin)) return true;
   // Turno de ayer que cruza la medianoche (ej. viernes 20:00-01:00 sigue abierto ya entrado
@@ -641,6 +803,18 @@ function estaAbiertoRetiroEnvio(fecha = new Date()){
   const diaAyer = (dia + 6) % 7;
   return (HORARIO_RETIRO_ENVIO[diaAyer] || []).some(([, fin]) => fin > 1440 && minutos < (fin - 1440));
 }
+// ---------- Modo local (localhost / archivo abierto a mano) ----------
+// Al probar el diseño en la compu NO se manda nada real: ni pedidos a cocina, ni códigos por
+// WhatsApp. postToSheet responde con datos simulados (el código de verificación es 1234), la
+// mesa no se valida contra la base y el horario de retiro/envío se da siempre por abierto.
+// El menú sí se lee de la base real (solo lectura) para ver los productos de verdad.
+// En nanorestobar.com esto no se activa nunca.
+// También cuenta como local una IP de red privada (192.168.x.x, 10.x.x.x, 172.16-31.x.x): es
+// cuando se prueba desde el celular conectado al mismo wifi que la compu.
+const MODO_LOCAL = ['localhost','127.0.0.1','[::1]',''].includes(location.hostname)
+  || /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(location.hostname)
+  || location.protocol === 'file:';
+if(MODO_LOCAL) console.info('%cModo local: los pedidos NO se envían al local (respuestas simuladas, código 1234).','color:#f2b233;font-weight:bold');
 const SUPABASE_HEADERS = { apikey: CONFIG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + CONFIG.SUPABASE_ANON_KEY };
 
 // La mesa y el token llegan por la URL del QR: https://tu-sitio/?mesa=6&t=a91f3c2b
@@ -663,6 +837,22 @@ const CARTA_URL = URL_PARAMS.get('carta');
 // categoría por error — antes, sin foto propia, cualquier categoría nueva mostraba la de
 // Pizzas por accidente, porque el fallback apuntaba siempre ahí).
 function catFoto(catId){ return catId + '.jpg'; }
+
+// Fotos de producto: van en la carpeta fotos/ con el id del producto + ".webp" (ej. el producto
+// pz1 -> fotos/pz1.webp), a 800x600 y bien comprimidas (~30-50KB). Al subir una foto, sumá
+// el id acá: así los productos sin foto no piden nada al servidor ni muestran un cuadro vacío.
+const FOTOS_PRODUCTOS = new Set([
+  'en2','en5','es1','ha3','ha5','lo2','lo5','mi2','mi4','mi7','p3b12187b','pa1','pa2',
+  'pa3','pa4','pc3031137','pc95a372a','pl1','pl2','pl3','pl5','pl6','pl7','pl9','po2','pe8b915db','pz2','pz3','pz5','pz7',
+]);
+// Apagado hasta confirmar con el dueño: con false no aparece el botón "Ver foto" en ninguna
+// tarjeta (y la carpeta fotos/ no hace falta subirla). Para activarlo: true + subir fotos/.
+const MOSTRAR_FOTOS_PRODUCTOS = false;
+function prodFoto(id){ return MOSTRAR_FOTOS_PRODUCTOS && FOTOS_PRODUCTOS.has(id) ? 'fotos/' + id + '.webp' : ''; }
+
+// Nombres y descripciones vienen de la base (los carga el panel): se escapan antes de meterlos
+// en el HTML para que un texto con < o comillas no se interprete como código.
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 let CATS=[
   {id:'pizzas',name:'Pizzas',icon:'pizza',half:true},
@@ -803,7 +993,9 @@ function fetchMenuFromSheet(){
         newMenu[p.categoria_id].push({ id: p.id, name: p.nombre, desc: p.descripcion, price: Number(p.precio), video: p.video || '' });
       });
 
-      CATS = newCats;
+      // Una categoría sin ningún producto disponible para este canal no se muestra en la carta
+      // (ni en la rueda): así, desactivando sus productos desde el panel, desaparece entera.
+      CATS = newCats.filter(c => (newMenu[c.id] || []).length > 0);
       MENU = newMenu;
       menuState='listo';
       try { localStorage.setItem(MENU_CACHE_KEY, JSON.stringify({ cats: CATS, menu: MENU })); } catch(e){}
@@ -828,7 +1020,10 @@ let state={cat:'pizzas',cart:{},comboCart:[],cuenta:[],mesa: MESA_URL || '5', to
 let solicitudEnCurso=false;
 
 function fmt(n){return "$"+Math.round(n).toLocaleString("es-AR")}
-function itemsOf(catId){return MENU[catId].map(i=>({...i,catId}))}
+// Siempre en orden alfabético, sin importar en qué orden se cargaron desde el panel.
+// numeric: "1 litro" antes que "10 litros"; sensitivity base: ignora mayúsculas y tildes.
+const ORDEN_ALFABETICO=new Intl.Collator('es',{sensitivity:'base',numeric:true});
+function itemsOf(catId){return MENU[catId].map(i=>({...i,catId})).sort((a,b)=>ORDEN_ALFABETICO.compare(a.name.trim(),b.name.trim()))}
 
 // Categorías (o productos puntuales) donde la cocina necesita sí o sí una aclaración para
 // prepararlo — si no se elige, se cocina "a ciegas" y después hay que volver a preguntarle
@@ -869,7 +1064,7 @@ function renderMenuStatus(){
   if(menuState==='cargando'){
     contentEl.style.display='none';
     statusEl.style.display='flex';
-    statusEl.innerHTML=`<div class="spinner"></div><p>Cargando el menú del local...</p>`;
+    statusEl.innerHTML=`<div class="skeleton" aria-label="Cargando el menú"><div class="sk sk-plate"></div><div class="sk sk-title"></div><div class="sk sk-card"></div><div class="sk sk-card"></div><div class="sk sk-card"></div></div>`;
   }else if(menuState==='error'){
     contentEl.style.display='none';
     statusEl.style.display='flex';
@@ -911,9 +1106,10 @@ function goTo(screen){
     current.classList.add('screen-exit');
     setTimeout(()=>{
       current.classList.remove('active','screen-exit');
+      window.scrollTo(0,0);
       target.classList.add('active');
       renderBottombar(screen);
-    },200);
+    },150);
   }else{
     document.querySelectorAll('#app .screen').forEach(s=>s.classList.remove('active'));
     target.classList.add('active');
@@ -926,144 +1122,278 @@ function renderMenu(){
   document.getElementById('menuContent').style.display='block';
   // En mesa el QR es solo para mirar el menú: el pedido lo toma la moza a mano, no se manda desde acá.
   document.getElementById('cartBtn').style.display = state.canal==='mesa' ? 'none' : 'flex';
-  setStaticCat(state.cat);
+  if(!CATS.find(c=>c.id===state.cat)&&CATS[0])state.cat=CATS[0].id;
+  renderRueda();
   renderProducts();
   updateCartBadge();
 }
 
 function catIndexOf(catId){ return CATS.findIndex(c=>c.id===catId); }
 
-// Dibuja la categoría activa sin animación (primera carga, o después de un cambio de canal).
-function setStaticCat(catId){
-  const cat=CATS.find(c=>c.id===catId);
-  if(!cat)return;
-  document.getElementById('catBackdrop').style.backgroundImage=`url('${catFoto(cat.id)}')`;
-  document.getElementById('catBackdrop').style.opacity='1';
-  document.getElementById('catIndex').textContent=`${catIndexOf(catId)+1} / ${CATS.length}`;
-  document.getElementById('catNameBlock').innerHTML=`<h1>${cat.name}</h1>`;
-
-  const zone=document.getElementById('catPlateZone');
-  zone.querySelectorAll('.cat-plate').forEach(p=>p.remove());
-  const plate=document.createElement('div');
-  plate.className='cat-plate center';
-  plate.style.backgroundImage=`url('${catFoto(cat.id)}')`;
-  zone.appendChild(plate);
-
-  updateCatPeeks(catId);
-}
-
-function updateCatPeeks(catId){
+// Puntitos debajo del nombre: muestran dónde estás entre todas las categorías.
+function renderCatDots(catId){
+  const el=document.getElementById('catDots');if(!el)return;
   const i=catIndexOf(catId);
-  const prevCat=CATS[(i-1+CATS.length)%CATS.length];
-  const nextCat=CATS[(i+1)%CATS.length];
-  document.getElementById('catPeekPrevImg').src=catFoto(prevCat.id);
-  document.getElementById('catPeekNextImg').src=catFoto(nextCat.id);
+  if(el.children.length!==CATS.length)el.innerHTML=CATS.map(()=>'<i></i>').join('');
+  [...el.children].forEach((d,j)=>d.classList.toggle('on',j===i));
 }
 
-// Transición diagonal con eje distinto según la dirección real — mismo criterio que la
-// referencia: "adelante" entra desde abajo-derecha y sale hacia arriba-izquierda, "atrás"
-// es la diagonal opuesta, no la misma invertida en el tiempo.
-let catAnimating=false;
-function goToCat(catId,direction){
-  if(catAnimating||catId===state.cat)return;
-  catAnimating=true;
-
-  const zone=document.getElementById('catPlateZone');
-  const outgoing=zone.querySelector('.cat-plate.center');
-  const nextCat=CATS.find(c=>c.id===catId);
-
-  const enterClass=direction==='next'?'enter-from-br':'enter-from-bl';
-  const exitClass=direction==='next'?'exit-to-tl':'exit-to-tr';
-
-  const incoming=document.createElement('div');
-  incoming.className='cat-plate '+enterClass;
-  incoming.style.backgroundImage=`url('${catFoto(nextCat.id)}')`;
-  zone.appendChild(incoming);
-  void incoming.offsetWidth; // fuerza el reflow para que la clase inicial pinte antes de animar
-
-  outgoing.classList.remove('center');
-  outgoing.classList.add(exitClass);
-  incoming.classList.remove(enterClass);
-  incoming.classList.add('center');
-
-  document.getElementById('catBackdrop').style.opacity='0.4';
-  const nameBlock=document.getElementById('catNameBlock');
-  nameBlock.style.opacity='0';
-  nameBlock.style.transform=direction==='next'?'translateY(-8px)':'translateY(8px)';
-
-  setTimeout(()=>{
-    state.cat=catId;
-    document.getElementById('catBackdrop').style.backgroundImage=`url('${catFoto(nextCat.id)}')`;
-    document.getElementById('catBackdrop').style.opacity='1';
-    document.getElementById('catIndex').textContent=`${catIndexOf(catId)+1} / ${CATS.length}`;
-    nameBlock.innerHTML=`<h1>${nextCat.name}</h1>`;
-    nameBlock.style.transform='translateY(0)';
-    requestAnimationFrame(()=>{ nameBlock.style.opacity='1'; });
-    renderProducts();
-    outgoing.remove();
-    updateCatPeeks(catId);
-    catAnimating=false;
-  },600);
+// Nombre, fondo y puntitos de la categoría que está al frente de la rueda (en vivo, mientras gira).
+function mostrarCatInfo(catId){
+  const cat=CATS.find(c=>c.id===catId);if(!cat)return;
+  const nb=document.getElementById('catNameBlock');
+  if(nb.dataset.cat!==catId){
+    const habia=!!nb.dataset.cat;
+    nb.dataset.cat=catId;
+    nb.innerHTML=`<h1>${esc(cat.name)}</h1>`;
+    if(habia&&nb.animate&&!sinAnimacion())nb.animate([{opacity:0,transform:'translateY(6px)'},{opacity:1,transform:'none'}],{duration:220,easing:'cubic-bezier(0.23,1,0.32,1)'});
+  }
+  document.getElementById('catBackdrop').style.backgroundImage=`url('${catFoto(catId)}')`;
+  renderCatDots(catId);
+}
+// Los productos se cambian recién cuando la rueda se asienta (no en cada frame del gesto).
+function fijarCategoria(catId){
+  if(state.cat===catId&&document.getElementById('productsList').children.length)return;
+  const dir=direccionEntre(state.cat,catId);
+  state.cat=catId;
+  cambiarDetalle(dir);
 }
 
-function goNextCat(){ const i=catIndexOf(state.cat); goToCat(CATS[(i+1)%CATS.length].id,'next'); }
-function goPrevCat(){ const i=catIndexOf(state.cat); goToCat(CATS[(i-1+CATS.length)%CATS.length].id,'prev'); }
+// ============================================================
+// Animación del detalle al cambiar de categoría: "mazo de cartas". Las tarjetas arrancan
+// apiladas en el lugar de la primera y se reparten hacia abajo hasta su lugar, con un rebote
+// chico al llegar. Solo transform/opacity; si se gira rápido, la anterior se corta; con
+// "reducir movimiento" es un fundido simple.
+// ============================================================
+const EASE_OUT='cubic-bezier(0.23,1,0.32,1)';
+const EASE_REBOTE='cubic-bezier(0.34,1.4,0.64,1)'; // pasa apenas de largo y vuelve: un rebote chico
 
-document.getElementById('catPeekNext').addEventListener('click',goNextCat);
-document.getElementById('catPeekPrev').addEventListener('click',goPrevCat);
+// +1 si la rueda avanzó, -1 si retrocedió.
+function direccionEntre(a,b){
+  const N=CATS.length,i=catIndexOf(a),j=catIndexOf(b);
+  if(i<0||j<0||!N)return 1;
+  let d=((j-i)%N+N)%N; if(d>N/2)d-=N;
+  return d>=0?1:-1;
+}
 
-// Arrastrar el plato (dedo o mouse) dispara la misma transición diagonal que las miniaturas.
-(function(){
+function cambiarDetalle(){
+  const el=document.getElementById('productsList');
+  el.classList.add('anim-js');
+  el.getAnimations({subtree:true}).forEach(a=>a.cancel());
+  renderProducts();
+  if(!el.animate)return;
+  if(sinAnimacion()){ el.animate([{opacity:0},{opacity:1}],{duration:160,easing:'ease-out'}); return; }
+  const cards=[...el.children];
+  const y0=cards.length?cards[0].offsetTop:0;
+  cards.forEach((c,i)=>{
+    c.style.zIndex=String(60-i); // la primera queda arriba del mazo
+    const a=c.animate([
+      {transform:`translateY(${y0-c.offsetTop}px) scale(${(1-Math.min(i,4)*0.03).toFixed(2)})`,opacity:i<4?1:0},
+      {transform:'none',opacity:1}],
+      {duration:560,delay:120+Math.min(i,8)*30,easing:EASE_REBOTE,fill:'backwards'});
+    a.finished.then(()=>{c.style.zIndex='';}).catch(()=>{});
+  });
+  if(cards[0])cards[0].animate([{transform:'scale(0.94)',opacity:0},{transform:'none',opacity:1}],{duration:200,easing:EASE_OUT});
+}
+
+// ---------- Rueda de categorías ----------
+// Los platos van sobre un arco y giran como un dial: se arrastra de costado (con inercia),
+// se toca un plato para traerlo al frente, o se usan las flechas del teclado. Es infinita
+// (después de la última categoría vuelve la primera). Solo anima transform y opacity.
+let ruedaLimpiar=null;
+function renderRueda(){
   const zone=document.getElementById('catPlateZone');
-  let startX=null;
-  zone.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; },{passive:true});
-  zone.addEventListener('touchend',e=>{
-    if(startX===null)return;
-    const dx=e.changedTouches[0].clientX-startX;
-    if(Math.abs(dx)>50){ dx<0?goNextCat():goPrevCat(); }
-    startX=null;
+  zone.querySelectorAll('.cat-wheel').forEach(n=>n.remove());
+  if(ruedaLimpiar){ruedaLimpiar();ruedaLimpiar=null;}
+  document.getElementById('catNameBlock').dataset.cat='';
+  const wheel=document.createElement('div');wheel.className='cat-wheel';
+  wheel.setAttribute('role','group');wheel.setAttribute('aria-label','Categorías');
+  wheel.innerHTML=`<div class="cat-wheel-arc"></div><div class="cat-wheel-mark"></div>`+
+    CATS.map((c,i)=>`<button class="cat-wheel-item" data-i="${i}" aria-label="${esc(c.name)}" style="background-image:url('${catFoto(c.id)}')"></button>`).join('');
+  zone.appendChild(wheel);
+  const items=[...wheel.querySelectorAll('.cat-wheel-item')], arc=wheel.querySelector('.cat-wheel-arc');
+  const N=CATS.length, PASO=31*Math.PI/180;
+  let pos=Math.max(0,catIndexOf(state.cat)), actual=pos, anim=0, arrastre=null;
+  const radio=()=>Math.max(280,wheel.clientWidth*0.86);
+  const norm=i=>((Math.round(i)%N)+N)%N;
+  function pintar(){
+    const r=radio(), d0=items[0].offsetWidth;
+    arc.style.cssText=`width:${2*r}px;height:${2*r}px;margin-left:${-r}px;top:${items[0].offsetTop+d0/2}px`;
+    items.forEach((el,i)=>{
+      let d=((i-pos)%N+N)%N;if(d>N/2)d-=N;
+      const th=d*PASO;
+      if(Math.abs(th)>Math.PI*0.55){el.style.visibility='hidden';return;}
+      el.style.visibility='';
+      const a=Math.abs(d), e1=1-0.44*Math.min(a,1)-0.14*Math.max(0,Math.min(a,2)-1);
+      el.style.transform=`translate(${(r*Math.sin(th)).toFixed(1)}px,${(r*(1-Math.cos(th))).toFixed(1)}px) rotate(${th.toFixed(3)}rad) scale(${e1.toFixed(3)})`;
+      el.style.opacity=String(Math.max(0,1-0.42*Math.min(a,2)));
+      el.style.zIndex=String(100-Math.round(a*10));
+    });
+    const c=norm(pos);if(c!==actual){actual=c;mostrarCatInfo(CATS[c].id);}
+  }
+  // Se asienta en un plato con ease-out fuerte (arranca rápido, frena suave).
+  function animarA(destino){
+    cancelAnimationFrame(anim);
+    const desde=pos, dist=destino-desde;
+    const dur=sinAnimacion()?0:Math.min(700,260+140*Math.abs(dist));
+    const t0=performance.now();
+    const paso=t=>{
+      const k=dur?Math.min(1,(t-t0)/dur):1;
+      pos=desde+dist*(1-Math.pow(1-k,4));pintar();
+      if(k<1)anim=requestAnimationFrame(paso);
+      else{pos=norm(destino);pintar();fijarCategoria(CATS[pos].id);}
+    };
+    anim=requestAnimationFrame(paso);
+  }
+  function irA(i){let d=((i-pos)%N+N)%N;if(d>N/2)d-=N;animarA(pos+d);}
+  // Arrastre con Pointer Events: horizontal gira la rueda, vertical deja scrollear la página.
+  wheel.addEventListener('pointerdown',e=>{
+    if(arrastre)return; // otro dedo mientras ya se arrastra: se ignora
+    cancelAnimationFrame(anim);
+    arrastre={id:e.pointerId,x:e.clientX,y:e.clientY,pos0:pos,lx:e.clientX,lt:performance.now(),v:0,movido:false};
   });
-  let mouseStartX=null;
-  zone.addEventListener('mousedown',e=>{ if(e.target.closest('.cat-peek'))return; mouseStartX=e.clientX; });
-  window.addEventListener('mouseup',e=>{
-    if(mouseStartX===null)return;
-    const dx=e.clientX-mouseStartX;
-    if(Math.abs(dx)>50){ dx<0?goNextCat():goPrevCat(); }
-    mouseStartX=null;
+  wheel.addEventListener('pointermove',e=>{
+    if(!arrastre||e.pointerId!==arrastre.id)return;
+    const dx=e.clientX-arrastre.x;
+    if(!arrastre.movido){
+      // Recién con 10px y un gesto claramente horizontal se toma como giro de la rueda; si no,
+      // se deja scrollear la página (antes, al bajar con el dedo un poco torcido, giraba sola).
+      if(Math.abs(dx)<10)return;
+      if(Math.abs(e.clientY-arrastre.y)*1.2>Math.abs(dx)){arrastre=null;return;}
+      arrastre.movido=true;wheel.setPointerCapture(e.pointerId);wheel.classList.add('arrastrando');
+    }
+    const px=radio()*PASO, ahora=performance.now(), dt=ahora-arrastre.lt;
+    pos=arrastre.pos0-dx/px;
+    if(dt>0)arrastre.v=0.8*(-(e.clientX-arrastre.lx)/px/dt)+0.2*arrastre.v;
+    arrastre.lx=e.clientX;arrastre.lt=ahora;
+    pintar();
   });
-})();
+  const soltar=e=>{
+    if(!arrastre||e.pointerId!==arrastre.id)return;
+    const a=arrastre;arrastre=null;wheel.classList.remove('arrastrando');
+    if(!a.movido){const it=e.target.closest&&e.target.closest('.cat-wheel-item');if(it)irA(+it.dataset.i);return;}
+    // Un toque rápido alcanza para pasar a la siguiente, pero la inercia nunca suma más de UNA
+    // categoría por encima de lo que se arrastró con el dedo: así no se saltea ninguna.
+    const v=performance.now()-a.lt>80?0:a.v;
+    const arrastrado=pos-a.pos0;
+    const maxPasos=Math.max(1,Math.round(Math.abs(arrastrado)));
+    let destino=Math.round(pos+v*140);
+    destino=Math.min(Math.round(a.pos0)+maxPasos,Math.max(Math.round(a.pos0)-maxPasos,destino));
+    animarA(destino);
+  };
+  wheel.addEventListener('pointerup',soltar);
+  wheel.addEventListener('pointercancel',e=>{if(arrastre&&e.pointerId===arrastre.id){arrastre=null;wheel.classList.remove('arrastrando');animarA(Math.round(pos));}});
+  const ro=new ResizeObserver(()=>{if(wheel.clientWidth)pintar();});
+  ro.observe(wheel);
+  ruedaLimpiar=()=>{cancelAnimationFrame(anim);ro.disconnect();};
+  // Teclado: flechas giran la rueda; Enter/Espacio sobre un plato lo trae al frente.
+  wheel.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'){e.preventDefault();irA(actual+1);}
+    else if(e.key==='ArrowLeft'){e.preventDefault();irA(actual-1);}
+  });
+  wheel.addEventListener('click',e=>{if(e.detail!==0)return;const it=e.target.closest('.cat-wheel-item');if(it)irA(+it.dataset.i);});
+  pintar();mostrarCatInfo(CATS[norm(pos)].id);
+}
 
-// Lista normal de productos de la categoría activa (la cabecera de arriba, con la foto
-// grande de la categoría, es la que ahora hace de "swipe" — acá abajo es una lista fija
-// que se scrollea vertical como cualquier lista).
+
+// Lista de productos de la categoría activa (la rueda de arriba es la que cambia de
+// categoría; acá abajo es una lista fija que se scrollea vertical como cualquier lista).
 function renderProducts(){
-  const items=itemsOf(state.cat);
   const cat=CATS.find(c=>c.id===state.cat);
   const el=document.getElementById('productsList');el.innerHTML='';
-  items.forEach(it=>el.appendChild(renderProductCard(it)));
+  if(cat)appendCatItems(cat,el);
+}
+function appendCatItems(cat,el){
+  const items=itemsOf(cat.id);
+  items.forEach((it,i)=>{const card=renderProductCard(it);card.style.setProperty('--i',i);el.appendChild(card);});
   // En mesa no se arma pedido desde acá (lo toma la moza a mano), así que estas tarjetas de
   // "armá tu pedido" (mitad y mitad / docena) no tienen sentido — solo aplican a retiro/envío.
   if(state.canal==='mesa')return;
-  if(cat.half)el.appendChild(renderHalfCard(cat));
-  if(cat.docena)el.appendChild(renderDocenaCard(cat));
+  if(cat.half){const c=renderHalfCard(cat);c.style.setProperty('--i',items.length);el.appendChild(c);}
+  if(cat.docena){const c=renderDocenaCard(cat);c.style.setProperty('--i',items.length);el.appendChild(c);}
 }
 
 function renderProductCard(it){
-  const card=document.createElement('div');card.className='product-card';
+  const card=document.createElement('div');card.className='product-card';card.dataset.id=it.id;
   const soloLectura=state.canal==='mesa';
   const entry=state.cart[it.id]||{qty:0,note:''};
+  const foto=prodFoto(it.id);
+  if(!soloLectura&&entry.qty>0)card.classList.add('in-cart');
   card.innerHTML=`<div class="product-info">
-    <strong>${it.name}</strong>
-    <div class="desc">${it.desc||''}</div>
-    ${it.video?`<button class="video-link" onclick="verVideo('${it.video}','${it.name}')">▶ Ver video</button>`:''}
+    <strong>${esc(it.name)}</strong>
+    <div class="desc">${esc(it.desc)}</div>
+    ${foto||it.video?`<div class="media-links">
+      ${foto?`<button class="video-link foto-link">${UI_ICONS.foto}Ver foto</button>`:''}
+      ${it.video?`<button class="video-link video-btn">${UI_ICONS.video}Ver video</button>`:''}
+    </div>`:''}
     <div class="price">${fmt(it.price)}</div>
-    ${soloLectura?'':`<div id="noteArea-${it.id}"></div>`}
+    ${soloLectura?'':`<div id="noteArea-${esc(it.id)}"></div>`}
   </div>
   ${soloLectura?'':`<div class="product-actions">
-    <div id="stepper-${it.id}"></div>
+    <div id="stepper-${esc(it.id)}"></div>
   </div>`}`;
+  if(foto)card.querySelector('.foto-link').addEventListener('click',e=>verFoto(foto,it.name,e.currentTarget));
+  if(it.video)card.querySelector('.video-btn').addEventListener('click',()=>verVideo(it.video,it.name));
   if(!soloLectura)setTimeout(()=>{renderStepper(it.id,entry.qty);renderNoteArea(it.id,entry)},0);
   return card;
+}
+
+// Efecto "genio" (como al abrir una ventana en Mac): la foto sale del botón "Ver foto",
+// angosta del lado del botón, y se estira hasta su tamaño. Solo anima transform, opacity y
+// clip-path, que el celular resuelve sin recalcular la página — anda fluido en gama baja.
+let fotoOrigen=null;
+function genieFrames(origen,box){
+  const b=origen.getBoundingClientRect(), r=box.getBoundingClientRect();
+  const dx=(b.left+b.width/2)-(r.left+r.width/2), dy=(b.top+b.height/2)-(r.top+r.height/2);
+  // El lado que queda cerca del botón es el que se afina (abajo si el botón está abajo).
+  const angosto=dy>0
+    ? ['polygon(0% 0%,100% 0%,56% 100%,44% 100%)','polygon(2% 0%,98% 0%,76% 100%,24% 100%)','polygon(0% 0%,100% 0%,93% 100%,7% 100%)']
+    : ['polygon(44% 0%,56% 0%,100% 100%,0% 100%)','polygon(24% 0%,76% 0%,98% 100%,2% 100%)','polygon(7% 0%,93% 0%,100% 100%,0% 100%)'];
+  return [
+    {transform:`translate(${dx}px,${dy}px) scale(0.12,0.04)`,clipPath:angosto[0],opacity:0},
+    {transform:`translate(${dx*0.45}px,${dy*0.6}px) scale(0.5,0.6)`,clipPath:angosto[1],opacity:1,offset:0.4},
+    {transform:`translate(${dx*0.1}px,${dy*0.15}px) scale(0.92,0.95)`,clipPath:angosto[2],opacity:1,offset:0.72},
+    {transform:'none',clipPath:'polygon(0% 0%,100% 0%,100% 100%,0% 100%)',opacity:1},
+  ];
+}
+const sinAnimacion=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// La imagen se pide recién acá, al tocar "Ver foto" — mientras baja se ve un spinner y
+// después aparece con un fundido, sin saltos.
+function verFoto(src,nombre,origen){
+  const overlay=document.getElementById('fotoOverlay');
+  const box=overlay.querySelector('.foto-box');
+  const img=document.getElementById('fotoGrande');
+  const spinner=document.getElementById('fotoSpinner');
+  document.getElementById('fotoTitle').textContent=nombre;
+  img.classList.remove('cargada');spinner.style.display='block';
+  img.onload=()=>{img.classList.add('cargada');spinner.style.display='none';};
+  img.onerror=()=>{spinner.style.display='none';};
+  img.src=src;
+  fotoOrigen=origen||null;
+  overlay.classList.add('show');
+  if(!overlay.animate)return;
+  overlay.animate([{opacity:0},{opacity:1}],{duration:260,easing:'ease-out'});
+  if(fotoOrigen&&!sinAnimacion())box.animate(genieFrames(fotoOrigen,box),{duration:420,easing:'cubic-bezier(0.23,1,0.32,1)'});
+}
+function cerrarFoto(){
+  const overlay=document.getElementById('fotoOverlay');
+  if(!overlay.classList.contains('show')||overlay.dataset.cerrando)return;
+  const box=overlay.querySelector('.foto-box');
+  const img=document.getElementById('fotoGrande');
+  const terminar=()=>{
+    overlay.classList.remove('show');delete overlay.dataset.cerrando;
+    img.onload=null;img.removeAttribute('src');img.classList.remove('cargada');
+  };
+  if(!overlay.animate||sinAnimacion()){terminar();return;}
+  overlay.dataset.cerrando='1';
+  // Al cerrar se "chupa" de vuelta hacia el botón (si sigue en pantalla).
+  const origenVisible=fotoOrigen&&fotoOrigen.isConnected;
+  if(origenVisible)box.animate(genieFrames(fotoOrigen,box).reverse().map((f,i)=>({...f,offset:[0,0.28,0.6,1][i]})),{duration:280,easing:'cubic-bezier(0.23,1,0.32,1)',fill:'forwards'});
+  overlay.animate([{opacity:1},{opacity:0}],{duration:origenVisible?280:180,easing:'ease-out',fill:'forwards'}).onfinish=()=>{
+    overlay.getAnimations({subtree:true}).forEach(a=>a.cancel());
+    terminar();
+  };
 }
 
 // El <video> no existe en el HTML hasta que se toca "Ver video" — así no se descarga
@@ -1087,8 +1417,8 @@ function cerrarVideo(){
 
 function renderStepper(id,qty){
   const holder=document.getElementById('stepper-'+id);if(!holder)return;
-  holder.innerHTML=qty===0?`<button class="btn-add-sm" onclick="changeQty('${id}',1)">+</button>`
-    :`<div class="stepper-sm"><button onclick="changeQty('${id}',-1)">−</button><span class="qty">${qty}</span><button onclick="changeQty('${id}',1)">+</button></div>`;
+  holder.innerHTML=qty===0?`<button class="btn-add-sm" onclick="changeQty('${id}',1)" aria-label="Agregar">${UI_ICONS.mas}</button>`
+    :`<div class="stepper-sm"><button onclick="changeQty('${id}',-1)" aria-label="Quitar uno">−</button><span class="qty" aria-live="polite">${qty}</span><button onclick="changeQty('${id}',1)" aria-label="Agregar uno">+</button></div>`;
 }
 
 function renderNoteArea(id,entry){
@@ -1103,11 +1433,11 @@ function renderNoteArea(id,entry){
     </select>`).join(''):'';
   let notaHtml;
   if(entry.showInput){
-    notaHtml=`<input class="note-input-sm" placeholder="Ej: sin cebolla, bien cocido..." value="${entry.note||''}" onblur="saveNote('${id}',this.value)">`;
+    notaHtml=`<input class="note-input-sm" placeholder="Ej: sin cebolla, bien cocido..." value="${esc(entry.note||'')}" onblur="saveNote('${id}',this.value)" enterkeyhint="done" onkeydown="if(event.key==='Enter')this.blur()">`;
   }else if(entry.note){
-    notaHtml=`<span class="note-chip-sm">📝 ${entry.note}</span> <button class="note-link-sm" style="display:inline;" onclick="toggleNote('${id}')">editar aclaración</button>`;
+    notaHtml=`<span class="note-chip-sm">${UI_ICONS.nota}${esc(entry.note)}</span> <button class="note-link-sm" onclick="toggleNote('${id}')">Editar</button>`;
   }else{
-    notaHtml=`<button class="note-link-sm" onclick="toggleNote('${id}')">＋ agregar aclaración</button>`;
+    notaHtml=`<button class="note-link-sm" onclick="toggleNote('${id}')">${UI_ICONS.nota}Agregar aclaración</button>`;
   }
   holder.innerHTML=opcionesHtml+notaHtml;
   if(entry.showInput)setTimeout(()=>{const inp=holder.querySelector('input');if(inp)inp.focus()},0);
@@ -1128,13 +1458,19 @@ function changeQty(id,delta){
   const next=Math.max(0,cur.qty+delta);
   if(next===0)delete state.cart[id];else state.cart[id]={...cur,qty:next};
   renderStepper(id,next);renderNoteArea(id,state.cart[id]||{qty:0,note:''});
+  const card=document.querySelector(`.product-card[data-id="${CSS.escape(id)}"]`);
+  if(card)card.classList.toggle('in-cart',next>0);
   updateCartBadge();renderBottombar('menu');
 }
 
 function updateCartBadge(){
   const lines=allCartLines();const count=lines.reduce((s,l)=>s+l.qty,0);
   const badge=document.getElementById('cartBadge');
+  const antes=Number(badge.textContent)||0;
   if(count>0){badge.textContent=count;badge.style.display='flex'}else{badge.style.display='none'}
+  if(count>0&&count!==antes&&!sinAnimacion()){
+    badge.classList.remove('bump');void badge.offsetWidth;badge.classList.add('bump');
+  }
 }
 
 function renderHalfCard(cat){
@@ -1148,7 +1484,7 @@ function renderHalfCard(cat){
     </div>
     <div class="half-foot">
       <span class="half-price" id="halfPrice">${fmt(Math.max(opts[0].price,opts[1].price))}</span>
-      <button class="half-add" onclick="addHalf('${cat.id}')">Agregar</button>
+      <button class="half-add" onclick="addHalf('${cat.id}',this)">Agregar</button>
     </div>`;
   setTimeout(()=>{document.getElementById('halfA').onchange=document.getElementById('halfB').onchange=()=>updateHalfPrice(cat.id)},0);
   return card;
@@ -1158,7 +1494,14 @@ function updateHalfPrice(catId){
   const b=findItem(document.getElementById('halfB').value);
   document.getElementById('halfPrice').textContent=fmt(Math.max(a.price,b.price));
 }
-function addHalf(catId){
+// El botón confirma por un momento que se sumó al pedido (si no, no pasa nada visible).
+function marcarAgregado(btn){
+  if(!btn)return;
+  clearTimeout(btn._t);
+  btn.classList.add('added');btn.textContent='Agregado ✓';
+  btn._t=setTimeout(()=>{btn.classList.remove('added');btn.textContent='Agregar';},1300);
+}
+function addHalf(catId,btn){
   const a=findItem(document.getElementById('halfA').value);
   const b=findItem(document.getElementById('halfB').value);
   if(a.id===b.id){alert('Elegí dos sabores distintos.');return}
@@ -1168,7 +1511,7 @@ function addHalf(catId){
   const existing=state.comboCart.find(c=>c.aId===a.id&&c.bId===b.id);
   if(existing)existing.qty+=1;
   else state.comboCart.push({key:'combo-'+a.id+'-'+b.id,aId:a.id,bId:b.id,name:`Mitad ${a.name} / mitad ${b.name}`,price,qty:1,catIcon:CATS.find(c=>c.id===catId).icon});
-  updateCartBadge();renderBottombar('menu');
+  updateCartBadge();renderBottombar('menu');marcarAgregado(btn);
 }
 
 // ---------- Tarjeta de "por docena" (empanadas, sándwiches de miga, etc.) ----------
@@ -1200,7 +1543,7 @@ function renderDocenaCard(cat){
       <select id="docenaA-${cat.id}" onchange="updateDocenaPrice('${cat.id}')">${opts.map(o=>`<option value="${o.id}">${o.name}</option>`).join('')}</select>
     </div>
     <div class="pay-options" style="margin:0 0 10px;">
-      <button class="pay-opt" id="docenaMitad-off-${cat.id}" onclick="setDocenaMitad('${cat.id}',false)">Un solo sabor</button>
+      <button class="pay-opt active" id="docenaMitad-off-${cat.id}" onclick="setDocenaMitad('${cat.id}',false)">Un solo sabor</button>
       <button class="pay-opt" id="docenaMitad-on-${cat.id}" onclick="setDocenaMitad('${cat.id}',true)">Mitad y mitad</button>
     </div>
     <div class="half-row" id="docenaBWrap-${cat.id}" style="display:none;">
@@ -1214,7 +1557,7 @@ function renderDocenaCard(cat){
     </div>`:''}
     <div class="half-foot">
       <span class="half-price" id="docenaPrice-${cat.id}">${fmt(opts[0].price)}</span>
-      <button class="half-add" onclick="addDocena('${cat.id}')">Agregar</button>
+      <button class="half-add" onclick="addDocena('${cat.id}',this)">Agregar</button>
     </div>`;
   setActiveBtn('docenaSize-docena-'+cat.id,['docenaSize-docena-'+cat.id,'docenaSize-media-'+cat.id]);
   setActiveBtn('docenaMitad-off-'+cat.id,['docenaMitad-off-'+cat.id,'docenaMitad-on-'+cat.id]);
@@ -1244,7 +1587,7 @@ function updateDocenaPrice(catId){
   const price=st.tamano==='media'?base/2:base;
   document.getElementById('docenaPrice-'+catId).textContent=fmt(price);
 }
-function addDocena(catId){
+function addDocena(catId,btn){
   const st=docenaState[catId];
   const cat=CATS.find(c=>c.id===catId);
   if(opcionesRequeridas(catId,'')&&!st.opcion){alert('Elegí si las querés al horno o fritas.');return}
@@ -1264,7 +1607,7 @@ function addDocena(catId){
   const existing=state.comboCart.find(c=>c.key===key);
   if(existing)existing.qty+=1;
   else state.comboCart.push({key,aId:a.id,bId,esMediaDocena:esMedia,name:label,price,qty:1,catIcon:cat.icon,desc:st.opcion||''});
-  updateCartBadge();renderBottombar('menu');
+  updateCartBadge();renderBottombar('menu');marcarAgregado(btn);
 }
 
 function removeCartLine(key){
@@ -1301,19 +1644,24 @@ function cartTotal(lines){return lines.reduce((s,l)=>s+l.price*l.qty,0)}
 function costoEnvio(){return state.canal==='envio'?CONFIG.COSTO_ENVIO:0}
 function totalConEnvio(lines){return cartTotal(lines)+costoEnvio()}
 
+function mostrarBarra(bar){
+  if(bar.style.display==='flex')return;
+  bar.style.display='flex';
+  bar.classList.remove('enter');void bar.offsetWidth;bar.classList.add('enter');
+}
 function renderBottombar(screen){
   const bar=document.getElementById('bottombar');
   if(screen==='menu'){
     const lines=allCartLines();const total=totalConEnvio(lines);const count=lines.reduce((s,l)=>s+l.qty,0);
     if(count===0){bar.style.display='none';return}
-    bar.style.display='flex';
-    bar.innerHTML=`<div class="total">${count} ítem${count>1?'s':''}<b>${fmt(total)}</b></div><button class="cta" onclick="goToCart()">Ver pedido →</button>`;
+    mostrarBarra(bar);
+    bar.innerHTML=`<div class="total">${count} ítem${count>1?'s':''}<b>${fmt(total)}</b></div><button class="cta" onclick="goToCart()">Ver pedido ${UI_ICONS.flecha}</button>`;
   }else if(screen==='cart'){
     const lines=allCartLines();const total=totalConEnvio(lines);
     const esMesa=state.canal==='mesa';
     const faltanOpciones=lines.some(l=>l.faltaOpcion);
     const listo=lines.length>0 && (esMesa || datosContactoCompletos()) && !faltanOpciones;
-    bar.style.display='flex';
+    mostrarBarra(bar);
     bar.innerHTML=`<div class="total">Total<b>${fmt(total)}</b></div><button class="cta" ${listo?'':'disabled'} onclick="${esMesa?'sendRound()':'confirmarPedido()'}">${esMesa?'Enviar a cocina':'Confirmar pedido'}</button>`;
   }else{bar.style.display='none'}
 }
@@ -1419,9 +1767,9 @@ function goToCart(){
   const lines=allCartLines();
   const el=document.getElementById('cartList');
   el.innerHTML=lines.length===0?'<div class="empty-cart">Todavía no agregaste nada</div>'
-    :lines.map(l=>`<div class="cart-line">
+    :lines.map((l,i)=>`<div class="cart-line" style="--i:${i}">
       <div class="ic">${ic(l.catIcon,18)}</div>
-      <div class="info"><strong>${l.qty}× ${l.name}</strong>${l.desc?`<span class="desc">📝 ${l.desc}</span>`:''}</div>
+      <div class="info"><strong>${l.qty}× ${esc(l.name)}</strong>${l.desc?`<span class="desc">${UI_ICONS.nota} ${esc(l.desc)}</span>`:''}</div>
       <div class="cart-line-right">
         <div class="price">${fmt(l.price*l.qty)}</div>
         <button class="cart-line-del" onclick="removeCartLine('${l.key}')" aria-label="Quitar">
@@ -1462,6 +1810,13 @@ function buildItemsForApi(lines){
 }
 
 function postToSheet(body){
+  if(MODO_LOCAL){
+    console.info('[modo local] no se envió:',body);
+    const simulada = body.action==='verificarCodigo'
+      ? (body.codigo==='1234' ? {ok:true} : {ok:false,error:'codigo_incorrecto'})
+      : {ok:true,id_pedido:'LOCAL-'+Date.now()};
+    return new Promise(r=>setTimeout(()=>r(simulada),700));
+  }
   return fetch(CONFIG.APPS_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json',...SUPABASE_HEADERS},body:JSON.stringify(body)}).then(r=>r.json());
 }
 
@@ -1478,7 +1833,7 @@ function sendRound(){
   document.getElementById('ticketBox').innerHTML=`<div class="row"><span>${canalLabel().etiqueta}</span><span>${canalLabel().valor}</span></div>
     <div class="row"><span>RONDA</span><span>#${state.cuenta.length}</span></div>
     <div class="row"><span>HORA</span><span>${time}</span></div><hr>
-    ${lines.map(l=>`<div class="row"><span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
+    ${lines.map(l=>`<div class="row"><span>${l.qty}× ${l.name}${l.desc?`<span class="note">${UI_ICONS.nota} ${esc(l.desc)}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
     <hr><div class="row tot"><span>TOTAL CUENTA</span><span>${fmt(cuentaTotal)}</span></div>
     <div class="status-line">El mozo ve esta ronda al instante en el panel del local.</div>`;
   document.getElementById('confirmActions').innerHTML=`<button class="cta" onclick="backToMenu()">Pedir algo más</button><button class="cta ghost" onclick="askBill()">Pedir la cuenta</button>`;
@@ -1538,7 +1893,7 @@ function confirmarPedido(){
 
   solicitudEnCurso=true;
   const bar=document.getElementById('bottombar');
-  bar.innerHTML=`<div class="total">Enviando...</div>`;
+  bar.innerHTML=`<div class="sending">Enviando tu pedido…</div>`;
 
   postToSheet({
     action:'crearPedido',
@@ -1628,7 +1983,12 @@ function otpSetTitulo(titulo,sub,emoji,color){
   document.getElementById('otpTitle').textContent=titulo;
   document.getElementById('otpTitle').style.color=color||'';
   document.getElementById('otpSub').textContent=sub;
-  if(emoji)document.getElementById('otpEmoji').textContent=emoji;
+  if(emoji){
+    const icono=document.getElementById('otpEmoji');
+    const ok=emoji==='✅';
+    icono.innerHTML=ok?UI_ICONS.ok:UI_ICONS.celular;
+    icono.style.cssText=ok?'background:rgba(92,214,141,0.12);border-color:rgba(92,214,141,0.35);color:var(--success)':'';
+  }
 }
 
 // El "abanico": cada casillero rota+traslada una sola vez desde un pivote muy por debajo
@@ -1687,7 +2047,7 @@ async function onOtpComplete(codigo){
   document.getElementById('otpSeal').classList.remove('show');
   const errEl=document.getElementById('codigoError');
   errEl.textContent = data.error==='demasiados_intentos'
-    ? 'Probaste el código incorrecto varias veces — esperá un rato y volvé a intentar.'
+    ? 'Probaste el código incorrecto varias veces. Esperá un rato y volvé a intentar.'
     : 'Código incorrecto, probá de nuevo.';
   errEl.style.display='block';
   otpSetTitulo('Confirmá tu número','Te enviamos un código de 4 dígitos por WhatsApp al número que ingresaste.','📲');
@@ -1710,7 +2070,7 @@ function mostrarPedidoConfirmado(){
     <div class="row"><span>TEL</span><span>${state.telefono}</span></div>
     ${esEnvio?`<div class="row"><span>DIRECCIÓN</span><span>${state.direccion}</span></div>`:''}
     <div class="row"><span>PAGO</span><span>${state.metodoPago==='efectivo'?'Efectivo al recibir':'Transferencia'}</span></div><hr>
-    ${lines.map(l=>`<div class="row"><span>${l.qty}× ${l.name}${l.desc?`<span class="note">📝 ${l.desc}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
+    ${lines.map(l=>`<div class="row"><span>${l.qty}× ${l.name}${l.desc?`<span class="note">${UI_ICONS.nota} ${esc(l.desc)}</span>`:''}</span><span>${fmt(l.price*l.qty)}</span></div>`).join('')}
     ${esEnvio?`<div class="row"><span>Costo de envío</span><span>${fmt(costoEnvio())}</span></div>`:''}
     <hr><div class="row tot"><span>TOTAL</span><span>${fmt(total)}</span></div>
     <div class="status-line">Verificado por WhatsApp ✓ · Te avisamos por ese mismo número cuando ${esEnvio?'salga en camino':'esté listo para retirar'}.</div>`;
@@ -1745,6 +2105,8 @@ function validarMesaAlCargar(){
 
   // Sin URL de Apps Script todavía: no hay contra qué validar, se queda en modo demo (desarrollo local).
   if(!CONFIG.APPS_SCRIPT_URL) return;
+  // Probando en la compu con ?mesa=5: se queda en la landing de mesa sin validar el QR.
+  if(MODO_LOCAL && MESA_URL) return;
 
   // Sin ?mesa= en la URL: no vino de un QR de mesa (por ej. compartiendo el link pelado por WhatsApp
   // o Instagram) — le mostramos el selector de retiro/envío en vez del menú de mesa.
