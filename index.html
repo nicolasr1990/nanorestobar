@@ -8,6 +8,24 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Figtree:wght@400;500;600;700&family=Inter:wght@400&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<script>
+  // ===== Modo liviano =====
+  // Celulares con poca memoria (ej. Moto E5, 2 GB) se traban con el vidrio esmerilado, los
+  // desenfoques y las animaciones: ahí se apagan esos efectos y la carta queda con fondos
+  // sólidos. Se decide antes de pintar. ?liviano=1 lo fuerza (para probar), ?liviano=0 lo apaga.
+  // navigator.deviceMemory solo existe en Chrome/Android y en https (nanorestobar.com lo es);
+  // donde no existe (iPhone, Safari) se asume un equipo normal.
+  (function(){
+    try{
+      var q = new URLSearchParams(location.search).get('liviano');
+      var mem = navigator.deviceMemory || 8;
+      var nucleos = navigator.hardwareConcurrency || 8;
+      var sinVidrio = window.CSS && CSS.supports && !CSS.supports('backdrop-filter','blur(1px)') && !CSS.supports('-webkit-backdrop-filter','blur(1px)');
+      var liviano = q === '1' || (q !== '0' && (mem <= 2 || (mem <= 3 && nucleos <= 4) || sinVidrio));
+      if(liviano) document.documentElement.className += ' liviano';
+    }catch(e){}
+  })();
+</script>
 <style>
   /* ===== Sistema visual =====
      Paleta sacada del logo (negro carbón + dorado de la llama), no inventada: así la app y el
@@ -516,6 +534,28 @@
     *,*::before,*::after{animation-duration:1ms!important;animation-delay:0ms!important;animation-iteration-count:1!important;transition-duration:1ms!important;scroll-behavior:auto!important}
     #fotoGrande{transition:opacity 200ms ease!important;transform:none}
   }
+
+  /* ===== Modo liviano (html.liviano): mismo diseño, sin los efectos caros ===== */
+  html.liviano{--glass:rgba(24,20,16,0.96);--glass-strong:rgba(20,17,13,0.98)}
+  html.liviano *,html.liviano *::before,html.liviano *::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  html.liviano #app::before{display:none}                 /* grano sobre toda la pantalla */
+  html.liviano .cat-backdrop{display:none}                /* foto desenfocada detrás del plato */
+  html.liviano .landing-glow{display:none}
+  html.liviano .product-card,html.liviano .ticket-box,html.liviano .selector-opt,html.liviano .mesa-badge,
+  html.liviano .half-card,html.liviano .topbar-back,html.liviano .cart-btn,html.liviano .video-link{box-shadow:none}
+  html.liviano .product-card.in-cart{box-shadow:none}
+  html.liviano .cat-wheel-item{box-shadow:none;will-change:auto}
+  html.liviano .bottombar{background:rgba(20,16,12,0.98);box-shadow:0 -4px 16px rgba(0,0,0,0.5)}
+  html.liviano .logo-img{filter:none}
+  /* Logo: sin el dibujo en neón; aparece directo con un fundido corto, y el texto enseguida. */
+  html.liviano .logo-trazo{display:none}
+  html.liviano .logo-ring{animation:none;opacity:1}
+  html.liviano #screen-landing .logo-img,html.liviano #screen-selector .logo-img{animation:fadeIn 300ms ease-out both}
+  html.liviano .greeting-script,html.liviano .greeting-sub,html.liviano .mesa-badge,html.liviano .cta-primary,
+  html.liviano .landing-note,html.liviano .selector-opt{animation:fadeIn 250ms ease-out 100ms forwards!important}
+  html.liviano .cta-primary::before{display:none}
+  html.liviano .product-card,html.liviano .half-card,html.liviano .cart-line{animation:none!important}
+  html.liviano .cat-name-block h1{text-shadow:none}
 </style>
 </head>
 <body>
@@ -1182,7 +1222,7 @@ function cambiarDetalle(){
   el.getAnimations({subtree:true}).forEach(a=>a.cancel());
   renderProducts();
   if(!el.animate)return;
-  if(sinAnimacion()){ el.animate([{opacity:0},{opacity:1}],{duration:160,easing:'ease-out'}); return; }
+  if(sinAnimacion()||document.documentElement.classList.contains('liviano')){ el.animate([{opacity:0},{opacity:1}],{duration:160,easing:'ease-out'}); return; }
   const cards=[...el.children];
   const y0=cards.length?cards[0].offsetTop:0;
   cards.forEach((c,i)=>{
