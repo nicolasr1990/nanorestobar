@@ -903,16 +903,20 @@ const CARTA_URL = URL_PARAMS.get('carta');
 function catFoto(catId){ return catId + '.jpg'; }
 
 // Fotos de producto: van en la carpeta fotos/ con el id del producto + ".webp" (ej. el producto
-// pz1 -> fotos/pz1.webp), a 800x600 y bien comprimidas (~30-50KB). Al subir una foto, sumá
+// pz1 -> fotos/pz1.webp), a 600x800 (vertical) y bien comprimidas (~30-60KB). Al subir una foto, sumá
 // el id acá: así los productos sin foto no piden nada al servidor ni muestran un cuadro vacío.
 const FOTOS_PRODUCTOS = new Set([
-  'en2','en5','es1','ha3','ha5','lo2','lo5','mi2','mi4','mi7','p3b12187b','pa1','pa2',
-  'pa3','pa4','pc3031137','pc95a372a','pl1','pl2','pl3','pl5','pl6','pl7','pl9','po2','pe8b915db','pz2','pz3','pz5','pz7',
+  'em1','en1','en2','en3','en4','en5','en6','es1','ha3','ha4','ha5','lo2','lo5','mi1','mi2','mi3',
+  'mi4','mi7','mi8','p3b12187b','p5d6e8aa5','pa1','pa2','pa3','pa4','pc3031137',
+  'pc8cc5705','pc95a372a','pe8b915db','pl1','pl10','pl2','pl3','pl4','pl5','pl6','pl7','pl8','pl9',
+  'po2','pz1','pz2','pz3','pz5','pz6','pz7','sm2',
 ]);
-// Apagado hasta confirmar con el dueño: con false no aparece el botón "Ver foto" en ninguna
+// Con false no aparece el botón "Ver foto" en ninguna
 // tarjeta (y la carpeta fotos/ no hace falta subirla). Para activarlo: true + subir fotos/.
-const MOSTRAR_FOTOS_PRODUCTOS = false;
-function prodFoto(id){ return MOSTRAR_FOTOS_PRODUCTOS && FOTOS_PRODUCTOS.has(id) ? 'fotos/' + id + '.webp' : ''; }
+// Subir este número cada vez que se cambia una foto, así los celulares no muestran la vieja guardada.
+const FOTOS_VERSION = 2;
+const MOSTRAR_FOTOS_PRODUCTOS = true;
+function prodFoto(id){ return MOSTRAR_FOTOS_PRODUCTOS && FOTOS_PRODUCTOS.has(id) ? 'fotos/' + id + '.webp?v=' + FOTOS_VERSION : ''; }
 
 // Nombres y descripciones vienen de la base (los carga el panel): se escapan antes de meterlos
 // en el HTML para que un texto con < o comillas no se interprete como código.
