@@ -909,12 +909,12 @@ const FOTOS_PRODUCTOS = new Set([
   'em1','en1','en2','en3','en4','en5','en6','es1','ha3','ha4','ha5','lo2','lo5','mi1','mi2','mi3',
   'mi4','mi7','mi8','p3b12187b','p5d6e8aa5','pa1','pa2','pa3','pa4','pc3031137',
   'pc8cc5705','pc95a372a','pe8b915db','pl1','pl10','pl2','pl3','pl4','pl5','pl6','pl7','pl8','pl9',
-  'po2','pz1','pz2','pz3','pz5','pz6','pz7','sm2',
+  'po2','pz1','pz2','pz3','pz5','pz6','pz7','sm2','sm3',
 ]);
 // Con false no aparece el botón "Ver foto" en ninguna
 // tarjeta (y la carpeta fotos/ no hace falta subirla). Para activarlo: true + subir fotos/.
 // Subir este número cada vez que se cambia una foto, así los celulares no muestran la vieja guardada.
-const FOTOS_VERSION = 2;
+const FOTOS_VERSION = 3;
 const MOSTRAR_FOTOS_PRODUCTOS = true;
 function prodFoto(id){ return MOSTRAR_FOTOS_PRODUCTOS && FOTOS_PRODUCTOS.has(id) ? 'fotos/' + id + '.webp?v=' + FOTOS_VERSION : ''; }
 
